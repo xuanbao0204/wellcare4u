@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Quicksand} from "next/font/google";
 import "./globals.css";
+import ToastProvider from "@/shared/ToastProvider";
+import { AuthProvider } from "@/shared/AuthContext";
+import NavBar from "@/shared/sections/NavBar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const quicksand = Quicksand({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -23,11 +23,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="vi" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${quicksand.variable} antialiased`}
       >
-        {children}
+        <ToastProvider />
+
+        <AuthProvider>
+          <NavBar/>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
