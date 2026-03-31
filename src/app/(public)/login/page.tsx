@@ -7,9 +7,9 @@ import { showError, showSuccess } from "@/lib/toast";
 import { LoginRequest } from "@/features/auth/type";
 import { login } from "@/features/auth/authService";
 import FloatingInput from "@/shared/components/FloatingInput";
-import { tokenStore } from "@/lib/tokenStore";
 import { useAuth } from "@/shared/AuthContext";
 import { parseApiError } from "@/lib/parseError";
+import { useRedirectByRole } from "@/features/auth/redirectByRole";
 
 const Login = () => {
     const [form, setForm] = useState<LoginRequest>({
@@ -26,22 +26,8 @@ const Login = () => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const redirectByRole = (role: string) => {
-    switch (role) {
-        case "ADMIN":
-            window.location.href = "/admin";
-            break;
-        case "DOCTOR":
-            window.location.href = "/doctor";
-            break;
-        case "PATIENT":
-            window.location.href = "/patient";
-            break;
-        default:
-            window.location.href = "/";
-    }
-};
-
+    const redirectByRole = useRedirectByRole();
+    
     useEffect(() => {
         if (user) {
             redirectByRole(user.role);

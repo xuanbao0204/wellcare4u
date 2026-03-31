@@ -11,3 +11,13 @@ export type ApiErrorResponse = {
   errorCode: string;
   data: null;
 };
+
+export type PersonalProfileData = {
+    email: string;
+    firstName: string;
+    lastName: string;
+    dob: string;
+    gender: string;
+    avatar?: string;
+    role: string;
+};

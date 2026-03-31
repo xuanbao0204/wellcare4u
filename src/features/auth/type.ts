@@ -13,6 +13,7 @@ export type LoginResponse = {
 }
 
 export type UserDTO = {
+    email: string;
     firstName: string;
     lastName: string;
     dob: string;

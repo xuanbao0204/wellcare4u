@@ -2,22 +2,24 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LogOut, Settings, UserRound } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogOut, Settings, User, UserRound } from "lucide-react";
 import { useAuth } from "../AuthContext";
 import Dropdown from "../components/DropDown";
 import { Care4ULogo } from "../ui/Care4U";
 import Badge from "../ui/Badge";
+import {useRedirectByRole} from "@/features/auth/redirectByRole";
 
 const NavBar = () => {
     const { user, logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const redirectByRole = useRedirectByRole();
 
     const links = [
-        { href: "/", label: "Home" },
-        { href: "/aboutus", label: "About" },
-        { href: "/services", label: "Services" },
-        { href: "/contact", label: "Contact" },
+        { href: "/", label: "Trang chủ" },
+        { href: "/aboutus", label: "Về chúng tôi" },
+        { href: "/services", label: "Dịch vụ" },
+        { href: "/contact", label: "Liên hệ" },
     ];
 
     const handleLogout = () => {
@@ -41,11 +43,10 @@ const NavBar = () => {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                                        isActive
-                                            ? "bg-white text-primary shadow-sm"
-                                            : "text-foreground/75 hover:bg-white/70 hover:text-primary"
-                                    }`}
+                                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${isActive
+                                        ? "bg-white text-primary shadow-sm"
+                                        : "text-foreground/75 hover:bg-white/70 hover:text-primary"
+                                        }`}
                                 >
                                     {link.label}
                                 </Link>
@@ -55,7 +56,7 @@ const NavBar = () => {
                 </div>
 
                 <div className="flex min-w-44 justify-end">
-                    {user && (
+                    {user ? (
                         <Dropdown
                             trigger={
                                 <div className="flex items-center gap-2 rounded-full border border-primary/15 bg-white/70 px-2 py-1.5 transition-colors hover:border-primary/30 hover:bg-white">
@@ -92,14 +93,24 @@ const NavBar = () => {
                             </div>
 
                             <div className="p-2">
-                                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/85 transition-colors hover:bg-primary/7 hover:text-primary">
+                                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/85 transition-colors hover:bg-primary/7 hover:text-primary"
+                                    onClick={() => redirectByRole(user.role)}>
+                                    <LayoutDashboard size={16} />
+                                    Trang chủ người dùng
+                                </button>
+                            </div>
+
+                            <div className="border-t border-primary/10 p-2">
+                                <a className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/85 transition-colors hover:bg-primary/7 hover:text-primary"
+                                    href={`/${user.role.toLowerCase()}/profile`}>
                                     <UserRound size={16} />
                                     Thông tin cá nhân
-                                </button>
-                                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/85 transition-colors hover:bg-primary/7 hover:text-primary">
+                                </a>
+                                <a className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/85 transition-colors hover:bg-primary/7 hover:text-primary"
+                                    href={`/${user.role.toLowerCase()}/settings`}>
                                     <Settings size={16} />
                                     Cài đặt tài khoản
-                                </button>
+                                </a>
                             </div>
 
                             <div className="border-t border-primary/10 p-2">
@@ -112,6 +123,19 @@ const NavBar = () => {
                                 </button>
                             </div>
                         </Dropdown>
+                    ) : (
+                        <Link
+                            href={"/login"}
+                            className="text-sm font-medium text-foreground/85 transition-colors hover:text-primary "
+                        >
+                            <div className="flex items-center border-gray-500 border-b-2 border-r-2 rounded-2xl px-5 py-2 gap-2
+                                        hover:border-primary/30 hover:bg-white/70 hover:text-primary transition-colors">
+                                <User size={16} className="inline-block" />
+                                <p className="inline-block">Đăng nhập</p>
+                            </div>
+
+                        </Link>
+
                     )}
                 </div>
             </div>
