@@ -6,13 +6,13 @@ export const useRedirectByRole = () => {
     return (role: string) => {
         switch (role) {
             case "ADMIN":
-                router.push("/admin");
+                router.push("/admin/dashboard");
                 break;
             case "DOCTOR":
-                router.push("/doctor");
+                router.push("/doctor/dashboard");
                 break;
             case "PATIENT":
-                router.push("/patient");
+                router.push("/patient/dashboard");
                 break;
             default:
                 router.push("/");
