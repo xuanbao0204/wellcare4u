@@ -1,20 +1,19 @@
 "use client";
 
-import ProfessionalInformation from "@/features/doctor/profile/section/ProfessionalInformation";
+import PatientInformationPage from "@/features/patient/profile/components/PatientInformation";
 import PersonalProfile from "@/shared/sections/PersonalInformation";
 import { useState } from "react";
 
 const sections = [
     { id: "overview", label: "Tổng quan" },
     { id: "personal-information", label: "Thông tin cá nhân" },
-    { id: "professional-details", label: "Thông tin chuyên môn" },
-    // { id: "schedule", label: "Lịch làm việc" },
-    // { id: "settings", label: "Cài đặt" },
+    { id: "patient-details", label: "Thông tin thêm" },
+
 ] as const;
 
 type SectionId = (typeof sections)[number]["id"];
 
-const DoctorProfilePage = () => {
+const PatientProfilePage = () => {
     const [activeSection, setActiveSection] = useState<SectionId>(sections[0].id);
 
     const currentSection = sections.find((section) => section.id === activeSection) ?? sections[0];
@@ -59,7 +58,7 @@ const DoctorProfilePage = () => {
 
                         {activeSection === "personal-information" && <PersonalProfile />}
 
-                        {activeSection === "professional-details" && <ProfessionalInformation />}
+                        {activeSection === "patient-details" && <PatientInformationPage />}
 
                         {/* {activeSection === "schedule" && (
                             <section className="h-105 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4">
@@ -79,4 +78,4 @@ const DoctorProfilePage = () => {
     );
 };
 
-export default DoctorProfilePage;
+export default PatientProfilePage;

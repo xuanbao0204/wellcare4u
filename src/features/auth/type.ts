@@ -3,7 +3,17 @@ export type LoginRequest = {
     password: string;
 }
 
+export type RegisterRequest = {
+    email: string;
+    password: string;
+    role: string;
+    firstName: string;
+    lastName: string;
+}
+
+
 export type LoginResponse = {
+    email: string;
     firstName: string;
     lastName: string;
     dob: string;
