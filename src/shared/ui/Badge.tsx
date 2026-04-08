@@ -108,4 +108,29 @@ export const BADGE_REGISTRY: Record<string, BadgeMeta> = {
             outline: "border border-gray-600 text-gray-600",
         },
     },
+    IN_PROGRESS: {
+        label: "Đang tiến hành",
+        variants: {
+            solid: "bg-blue-600 text-white",
+            soft: "bg-blue-100 text-blue-600",
+            outline: "border border-blue-500 text-blue-600",
+        },
+    },
+    COMPLETED: {
+        label: "Đã hoàn thành",
+        variants: {
+            solid: "bg-purple-600 text-white",
+            soft: "bg-purple-100 text-purple-600",
+            outline: "border border-purple-500 text-purple-600",
+        },
+    },
+
+    VERIFIED: {
+        label: "Đã xác minh",
+        variants: {
+            solid: "bg-green-600 text-white",
+            soft: "bg-green-100 text-green-600",
+            outline: "border border-green-600 text-green-600",
+        },
+    }
 };
