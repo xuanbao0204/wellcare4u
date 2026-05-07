@@ -7,12 +7,8 @@ const menu = [
     { href: "/doctor/dashboard", label: "Dashboard" },
     { href: "/doctor/appointments", label: "Lịch hẹn" },
     { href: "/doctor/medical-records", label: "Hồ sơ bệnh án" },
-    { href: "/doctor/prescriptions", label: "Đơn thuốc" },
-    { href: "/doctor/examination", label: "Khám bệnh" },
+    { href: "/doctor/patients", label: "Bệnh nhân" },
     { href: "/doctor/schedule", label: "Lịch làm việc" },
-    { href: "/doctor/manage-appointments", label: "Quản lý lịch hẹn" },
-    { href: "/doctor/forum", label: "Diễn đàn" },
-    { href: "/doctor/profile", label: "Hồ sơ cá nhân" },
 ];
 
 export default function DoctorLayout({

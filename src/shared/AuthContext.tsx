@@ -8,16 +8,17 @@ import React, {
     useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
+import api, { markAuthReady } from "@/lib/axios";
 import type { UserDTO } from "@/features/auth/type";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8600/api/v1";
+import Loader from "./ui/Loader";
 
 type AuthContextType = {
     user: UserDTO | null;
     setUser: React.Dispatch<React.SetStateAction<UserDTO | null>>;
-    logout: () => void;
+    logout: () => Promise<void>;
     isAuthenticated: boolean;
     loading: boolean;
+    authReady: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,76 +26,153 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserDTO | null>(null);
     const [loading, setLoading] = useState(true);
+    const [authReady, setAuthReady] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
         const initAuth = async () => {
             try {
-                const res = await fetch(`${API_URL}/auth/me`, {
-                    credentials: "include",
-                });
-
-                if (res.status === 401) {
-                    const refreshRes = await fetch(
-                        `${API_URL}/auth/refresh`,
-                        {
-                            method: "POST",
-                            credentials: "include",
-                        }
-                    );
-
-                    if (!refreshRes.ok) throw new Error();
-
-                    const meAgain = await fetch(
-                        `${API_URL}/auth/me`,
-                        {
-                            credentials: "include",
-                        }
-                    );
-
-                    if (!meAgain.ok) throw new Error();
-
-                    const data = await meAgain.json();
-                    setUser(data);
-                } else {
-                    const data = await res.json();
-                    setUser(data);
-                }
+                const res = await api.get("/auth/me");
+                setUser(res.data);
             } catch {
                 setUser(null);
             } finally {
+                setAuthReady(true);
                 setLoading(false);
+                markAuthReady();
             }
         };
 
         initAuth();
     }, []);
 
+    useEffect(() => {
+        const handleForcedLogout = () => {
+            setUser(null);
+            router.replace("/login");
+        };
+
+        window.addEventListener("auth:logout", handleForcedLogout);
+        return () => window.removeEventListener("auth:logout", handleForcedLogout);
+    }, [router]);
+
     const logout = useCallback(async () => {
-        await fetch(`${API_URL}/auth/logout`, {
-            method: "POST",
-            credentials: "include",
-        });
+        try {
+            await api.post("/auth/logout");
+        } catch {
+
+        }
 
         setUser(null);
+        window.dispatchEvent(new Event("auth:logout"));
         router.replace("/login");
     }, [router]);
 
-    const value = {
-        user,
-        setUser,
-        logout,
-        isAuthenticated: !!user,
-        loading,
-    };
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider
+            value={{ user, setUser, logout, isAuthenticated: !!user, loading, authReady }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("useAuth must be used inside AuthProvider");
-    }
+    if (!context) throw new Error("useAuth must be used inside AuthProvider");
     return context;
 };
+
+// "use client";
+
+// import React, {
+//     createContext,
+//     useContext,
+//     useEffect,
+//     useState,
+//     useCallback,
+// } from "react";
+// import { useRouter } from "next/navigation";
+// import api from "@/lib/axios";
+// import type { UserDTO } from "@/features/auth/type";
+
+// type AuthContextType = {
+//     user: UserDTO | null;
+//     setUser: React.Dispatch<React.SetStateAction<UserDTO | null>>;
+//     logout: () => Promise<void>;
+//     isAuthenticated: boolean;
+//     loading: boolean;
+//     authReady: boolean;
+// };
+
+// const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// export function AuthProvider({ children }: { children: React.ReactNode }) {
+//     const [user, setUser] = useState<UserDTO | null>(null);
+//     const [loading, setLoading] = useState(true);
+//     const [authReady, setAuthReady] = useState(false);
+//     const router = useRouter();
+
+//     useEffect(() => {
+//         const initAuth = async () => {
+//             try {
+//                 const res = await api.get("/auth/me");
+//                 setUser(res.data);
+//             } catch {
+//                 setUser(null);
+//             } finally {
+//                 setAuthReady(true);
+//                 setLoading(false);
+//                 // Let axios and websocket know auth is resolved — no direct coupling needed
+//                 window.dispatchEvent(new Event("auth:ready"));
+//             }
+//         };
+
+//         initAuth();
+//     }, []);
+
+//     // Listen for forced logout triggered by the axios interceptor (e.g. refresh failed)
+//     useEffect(() => {
+//         const handleForcedLogout = () => {
+//             setUser(null);
+//             router.replace("/login");
+//         };
+
+//         window.addEventListener("auth:logout", handleForcedLogout);
+//         return () => window.removeEventListener("auth:logout", handleForcedLogout);
+//     }, [router]);
+
+//     const logout = useCallback(async () => {
+//         try {
+//             await api.post("/auth/logout");
+//         } catch {
+//             // Server-side logout is best-effort; always clear client state
+//         }
+
+//         setUser(null);
+//         // Single event drives everything: axios readiness reset, WS teardown, redirect
+//         window.dispatchEvent(new Event("auth:logout"));
+//         router.replace("/login");
+//     }, [router]);
+
+//     return (
+//         <AuthContext.Provider
+//             value={{
+//                 user,
+//                 setUser,
+//                 logout,
+//                 isAuthenticated: !!user,
+//                 loading,
+//                 authReady,
+//             }}
+//         >
+//             {children}
+//         </AuthContext.Provider>
+//     );
+// }
+
+// export const useAuth = () => {
+//     const context = useContext(AuthContext);
+//     if (!context) throw new Error("useAuth must be used inside AuthProvider");
+//     return context;
+// };
