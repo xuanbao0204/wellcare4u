@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className="scroll-smooth">
       <body
-        className={`${quicksand.variable} antialiased`}
+        className={`w-full ${quicksand.variable} antialiased`}
       >
         <ToastProvider />
 
