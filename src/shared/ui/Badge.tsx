@@ -36,6 +36,7 @@ export default function Badge({
         <span
             className={`
                 inline-flex items-center
+                text-center
                 rounded-full
                 font-medium
                 ${sizeClasses[size]}
@@ -123,6 +124,14 @@ export const BADGE_REGISTRY: Record<string, BadgeMeta> = {
             soft: "bg-purple-100 text-purple-600",
             outline: "border border-purple-500 text-purple-600",
         },
+    },
+    EXPIRED:{
+        label: "Đã quá hạn",
+        variants: {
+            solid: "bg-red-600 text-white",
+            soft: "bg-red-100 text-red-600",
+            outline: "border border-red-600 text-red-600"
+        }
     },
 
     VERIFIED: {

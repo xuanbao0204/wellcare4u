@@ -6,6 +6,7 @@ type FloatingInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
     error?: string;
     leftIcon?: React.ReactNode;
     rightIcon?: React.ReactNode;
+    value?: any;
     onRightIconClick?: () => void;
 };
 
@@ -18,6 +19,7 @@ export default function FloatingInput({
     leftIcon,
     rightIcon,
     onRightIconClick,
+    value,
     ...props
 }: FloatingInputProps) {
     const inputId = id || React.useId();
@@ -28,6 +30,7 @@ export default function FloatingInput({
                 id={inputId}
                 placeholder=" "
                 aria-invalid={!!error}
+                value={value || ""}
                 className={`
                     peer w-full rounded-lg border-2
                     border-gray-300

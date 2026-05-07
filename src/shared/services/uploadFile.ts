@@ -52,12 +52,8 @@ export const deleteFile = async (publicId: string) => {
 };
 
 export const getPublicIdFromUrl = (url: string) => {
-    try {
         const parts = url.split("/upload/")[1]; 
         const withoutVersion = parts.replace(/v\d+\//, ""); 
         const publicId = withoutVersion.split(".")[0]; 
         return publicId;
-    } catch {
-        return null;
-    }
 };

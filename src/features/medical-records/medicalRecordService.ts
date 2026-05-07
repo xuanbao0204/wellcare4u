@@ -1,10 +1,10 @@
 import api from "@/lib/axios"
 import { MedicalRecordDTO } from "./types";
 import { MedicalRecordListDTO } from "./types";
-import { ApiResponse } from "@/shared/type";
+import { ApiResponse, MedicalRecordDetail } from "@/shared/type";
 
 export const getAllRecordByPatientId = async(patientId: number) => {
-    const res = await api.get<MedicalRecordListDTO[]>(`/medical-records/patient/${patientId}`);
+    const res = await api.get<ApiResponse<MedicalRecordListDTO[]>>(`/medical-records/patient/${patientId}`);
     return res.data;
 }
 
@@ -14,6 +14,6 @@ export const getAllRecordByDoctorId = async(doctorId: number) => {
 }
 
 export const getRecordDetail = async(recordId: number) => {
-    const res = await api.get<ApiResponse<MedicalRecordDTO>>(`/medical-records/detail/${recordId}`);
+    const res = await api.get<ApiResponse<MedicalRecordDetail>>(`/medical-records/detail/${recordId}`);
     return res.data;
 }

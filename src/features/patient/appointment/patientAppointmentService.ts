@@ -73,3 +73,8 @@ export const cancelAppointment = async (id: number) => {
   const res = await api.put<ApiResponse<any>>(`/appointment/cancel/${id}`);
   return res.data;
 }
+
+export const checkInAppointment = async (id: number) => {
+  const res = await api.put<ApiResponse<any>>(`/appointment/check-in/${id}`);
+  return res.data;
+}
