@@ -45,6 +45,7 @@ const NavBar = () => {
         { href: "/services", label: "Dịch vụ" },
         { href: "/contact", label: "Liên hệ" },
         { href: "/forum", label: "Diễn đàn"},
+        { href: "/doctors", label: "Đội ngũ bác sĩ" },
     ];
 
     const handleLogout = () => {

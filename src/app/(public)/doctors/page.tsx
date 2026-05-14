@@ -1,16 +1,19 @@
-import { Search, ShieldCheck, Stethoscope, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+"use client";
+
+import { getAllDoctors } from "@/features/patient/appointment/patientAppointmentService";
 import { showError } from "@/lib/toast";
+import { useAuth } from "@/shared/AuthContext";
+import DoctorCard from "@/shared/sections/DoctorCard";
 import { DoctorDTO } from "@/shared/type";
-import DoctorCard from "../../../../shared/sections/DoctorCard";
-import { getAllDoctors } from "../patientAppointmentService";
+import { Search, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-type DoctorSelectStepProps = {
-    selectedDoctor?: DoctorDTO | null;
-    onSelect: (doctor: DoctorDTO) => void;
-};
+export default function DoctorsPage() {
 
-export default function DoctorSelectStep({ selectedDoctor, onSelect }: DoctorSelectStepProps) {
+    const {user} = useAuth();
+    const router = useRouter();
+
     const [doctors, setDoctors] = useState<DoctorDTO[]>([]);
     const [keyword, setKeyword] = useState("");
     const [page] = useState(0);
@@ -40,8 +43,8 @@ export default function DoctorSelectStep({ selectedDoctor, onSelect }: DoctorSel
     });
 
     return (
-        <section className="rounded-[28px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.28)]">
-            <div className="flex flex-col gap-6">
+        <section className="flex flex-col items-center justify-center mt-5 rounded-[28px] ">
+            <div className="max-w-7xl rounded-[28px] gap-6 border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.28)]">
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_320px]">
                     <div>
                         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-emerald-700">
@@ -49,11 +52,10 @@ export default function DoctorSelectStep({ selectedDoctor, onSelect }: DoctorSel
                             Doctor directory
                         </div>
                         <h2 className="text-2xl font-semibold text-slate-900">
-                            Chọn bác sĩ phù hợp cho buổi khám
+                            Đội ngũ bác sỹ của chúng tôi
                         </h2>
                         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                            Tìm theo tên hoặc chuyên khoa, sau đó tiếp tục sang bước chọn lịch
-                            hẹn phù hợp với thời gian của bạn.
+                            Với đội ngũ bác sỹ giàu kinh nghiệm và tận tâm, chúng tôi cam kết mang đến cho bạn sự chăm sóc sức khỏe tốt nhất. Hãy tìm kiếm và đặt lịch hẹn với bác sỹ phù hợp ngay hôm nay.
                         </p>
                     </div>
 
@@ -83,37 +85,11 @@ export default function DoctorSelectStep({ selectedDoctor, onSelect }: DoctorSel
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {filteredDoctors.map((doctor) => (
-                            <DoctorCard key={doctor.id} doctor={doctor} onSelect={onSelect} allowBooking={true} />
+                            <DoctorCard key={doctor.id} doctor={doctor} allowBooking={!!user && user.role === "PATIENT"} onSelect={() => router.push(`/patient/appointments/create?doctorId=${doctor.id}`)} />
                         ))}
                     </div>
                 )}
             </div>
         </section>
-    );
-}
-
-function InfoPill({
-    icon,
-    title,
-    value,
-}: {
-    icon: React.ReactNode;
-    title: string;
-    value: string;
-}) {
-    return (
-        <div className="rounded-2xl border border-slate-200 bg-white/90 p-4">
-            <div className="flex items-center gap-3">
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
-                    {icon}
-                </div>
-                <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
-                        {title}
-                    </p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">{value}</p>
-                </div>
-            </div>
-        </div>
     );
 }

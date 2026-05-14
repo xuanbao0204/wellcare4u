@@ -27,7 +27,7 @@ const onRefreshFailed = () => {
   refreshSubscribers = [];
 };
 
-const NON_RETRYABLE = ["/auth/refresh", "/auth/login", "/auth/logout"];
+const NON_RETRYABLE = ["/auth/refresh", "/auth/login", "/auth/register", "/auth/logout"];
 
 const refreshToken = () =>
   axios.post(

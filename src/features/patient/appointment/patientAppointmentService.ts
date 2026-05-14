@@ -23,6 +23,18 @@ export const getAllDoctors = async (params?: DoctorListParams) => {
   return res.data;
 };
 
+export const getDoctorById = async (doctorId: number) => {
+  const res = await api.get<ApiResponse<DoctorDTO>>(`/list/doctor/${doctorId}`);
+  return res.data;
+};
+
+export const getDoctorSlots = async (doctorId: number, date: string) => {
+  const res = await api.get<ApiResponse<SlotDTO[]>>(
+    `/list/doctor/${doctorId}/available-slots?date=${date}`
+  );
+  return res.data;
+}
+
 export const getSlotByDoctorAndDate = async (doctorId: number, date: string) => {
   const res = await api.get<ApiResponse<SlotDTO[]>>(
     `/list/doctor/${doctorId}/available-slots?date=${date}`
