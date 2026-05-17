@@ -18,13 +18,3 @@ export const register = async (registerRequest: RegisterRequest): Promise<ApiRes
 
     return response.data;
 };
-
-export const verifyOtp = async (email: string, code: string): Promise<ApiResponse<null>> => {
-    const response = await api.post<ApiResponse<null>>("/auth/verify-otp", { email, code });
-    return response.data;
-};
- 
-export const resendOtp = async (email: string): Promise<ApiResponse<null>> => {
-    const response = await api.post<ApiResponse<null>>("/auth/resend-otp", { email });
-    return response.data;
-};

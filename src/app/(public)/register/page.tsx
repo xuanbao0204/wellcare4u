@@ -8,8 +8,12 @@ import FloatingInput from "@/shared/components/FloatingInput";
 import { parseApiError } from "@/lib/parseError";
 import { register } from "@/features/auth/authService";
 import { RegisterRequest } from "@/features/auth/type";
+import { useRouter } from "next/navigation";
 
 const Register = () => {
+
+    const router = useRouter();
+
     const [form, setForm] = useState<RegisterRequest>({
         email: "",
         password: "",
@@ -93,8 +97,16 @@ const Register = () => {
                 return;
             }
             showSuccess(response.message);
-
-            window.location.href = `/verify-otp?email=${encodeURIComponent(form.email)}`;
+            sessionStorage.setItem(
+                "otp_flow",
+                JSON.stringify({
+                    purpose: "REGISTER",
+                    email: form.email,
+                    redirectTo: "/login",
+                    source: "/register"
+                })
+            );
+            router.push("/verify-otp");
         } catch (error: any) {
             console.log(error);
             showError(parseApiError(error));

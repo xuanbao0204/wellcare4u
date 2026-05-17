@@ -17,7 +17,7 @@ const Login = () => {
         password: "",
     });
 
-    const { user, setUser } = useAuth();
+    const { user, setUser} = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -28,11 +28,11 @@ const Login = () => {
 
     const redirectByRole = useRedirectByRole();
     
-    useEffect(() => {
-        if (user) {
-            redirectByRole(user.role);
-        }
-    }, [user]);
+    // useEffect(() => {
+    //     if (user) {
+    //         redirectByRole(user.role);
+    //     }
+    // }, [user]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

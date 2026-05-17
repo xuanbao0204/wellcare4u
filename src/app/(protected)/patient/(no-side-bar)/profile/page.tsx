@@ -1,6 +1,7 @@
 "use client";
 
 import PatientInformationPage from "@/features/patient/profile/components/PatientInformation";
+import DangerZone from "@/shared/sections/DangerousArea";
 import PersonalProfile from "@/shared/sections/PersonalInformation";
 import { useState } from "react";
 
@@ -8,6 +9,7 @@ const sections = [
     { id: "overview", label: "Tổng quan" },
     { id: "personal-information", label: "Thông tin cá nhân" },
     { id: "patient-details", label: "Thông tin thêm" },
+    { id: "dangerous-area", label: "Khu vực nguy hiểm" },
 
 ] as const;
 
@@ -29,18 +31,17 @@ const PatientProfilePage = () => {
                                 const isActive = section.id === activeSection;
 
                                 return (
-                                <button
-                                    key={section.id}
-                                    type="button"
-                                    onClick={() => setActiveSection(section.id)}
-                                    className={`w-full rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition-colors ${
-                                        isActive
-                                            ? "border-primary/30 bg-primary/10 text-primary"
-                                            : "border-transparent text-foreground/80 hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
-                                    }`}
-                                >
-                                    {section.label}
-                                </button>
+                                    <button
+                                        key={section.id}
+                                        type="button"
+                                        onClick={() => setActiveSection(section.id)}
+                                        className={`w-full rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition-colors ${isActive
+                                                ? "border-primary/30 bg-primary/10 text-primary"
+                                                : "border-transparent text-foreground/80 hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
+                                            }`}
+                                    >
+                                        {section.label}
+                                    </button>
                                 );
                             })}
                         </nav>
@@ -60,17 +61,7 @@ const PatientProfilePage = () => {
 
                         {activeSection === "patient-details" && <PatientInformationPage />}
 
-                        {/* {activeSection === "schedule" && (
-                            <section className="h-105 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4">
-                                <p className="text-sm text-foreground/70">Add your Schedule content here.</p>
-                            </section>
-                        )}
-
-                        {activeSection === "settings" && (
-                            <section className="h-105 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4">
-                                <p className="text-sm text-foreground/70">Add your Settings content here.</p>
-                            </section>
-                        )} */}
+                        {activeSection === "dangerous-area" && <DangerZone />}
                     </main>
                 </div>
             </div>

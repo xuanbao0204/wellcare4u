@@ -1,19 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { verifyOtp, resendOtp } from "@/features/auth/authService";
+import { useRouter } from "next/navigation";
 import { showError, showSuccess } from "@/lib/toast";
 import { parseApiError } from "@/lib/parseError";
 import { ShieldCheck, RefreshCw, ArrowLeft, Mail } from "lucide-react";
+import Loader from "@/shared/ui/Loader";
+import { resendOtp, sendOtp, verifyOtp } from "@/features/otp/otpService";
+import { activeAccount } from "@/features/account/accountService";
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
 
 export default function VerifyOtpPage() {
-    const searchParams = useSearchParams();
+    const [flow, setFlow] = useState<any>(null);
+
+    useEffect(() => {
+        const stored = sessionStorage.getItem("otp_flow");
+
+        if (stored) {
+            setFlow(JSON.parse(stored));
+        }
+    }, []);
+    const email = flow?.email;
+    const purpose = flow?.purpose;
     const router = useRouter();
-    const email = searchParams.get("email") ?? "";
 
     const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
     const [loading, setLoading] = useState(false);
@@ -21,19 +32,45 @@ export default function VerifyOtpPage() {
     const [cooldown, setCooldown] = useState(0);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    // Countdown cho nút gửi lại
     useEffect(() => {
         if (cooldown <= 0) return;
         const t = setTimeout(() => setCooldown(c => c - 1), 1000);
         return () => clearTimeout(t);
     }, [cooldown]);
 
-    // Redirect nếu không có email
     useEffect(() => {
-        if (!email) router.replace("/register");
-    }, [email, router]);
+        if (flow && !email) {
+            router.replace(flow?.source || "/");
+        }
+    }, [flow, email, router]);
 
-    // ─── Input handlers ───────────────────────────────────────────────────────
+    const hasSentOtp = useRef(false);
+
+    useEffect(() => {
+        if (!email || !purpose || hasSentOtp.current) return;
+
+        const sendInitialOtp = async () => {
+            try {
+                hasSentOtp.current = true;
+
+                setResending(true);
+
+                const res = await sendOtp(email, flow.purpose);
+
+                showSuccess(res.message);
+
+                setCooldown(RESEND_COOLDOWN);
+            } catch (err: any) {
+                hasSentOtp.current = false;
+
+                showError(parseApiError(err));
+            } finally {
+                setResending(false);
+            }
+        };
+
+        sendInitialOtp();
+    }, [email, purpose]);
 
     const handleChange = (index: number, value: string) => {
         // Cho phép paste chuỗi 6 số
@@ -68,8 +105,6 @@ export default function VerifyOtpPage() {
         if (e.key === "ArrowRight" && index < OTP_LENGTH - 1) inputRefs.current[index + 1]?.focus();
     };
 
-    // ─── Actions ──────────────────────────────────────────────────────────────
-
     const handleVerify = async () => {
         const code = digits.join("");
         if (code.length < OTP_LENGTH) {
@@ -79,12 +114,24 @@ export default function VerifyOtpPage() {
 
         setLoading(true);
         try {
-            const res = await verifyOtp(email, code);
+            const res = await verifyOtp(email, code, flow.purpose);
             showSuccess(res.message);
-            router.replace("/login");
+            if (flow.purpose === "ACTIVATE") {
+                const res = await activeAccount(email);
+                if (res.status !== 200)
+                {
+                    showError(res.message);
+                    return;
+                }
+                showSuccess(res.message);
+                router.push("/login");
+                sessionStorage.removeItem("otp_flow");
+                return;
+            }
+            sessionStorage.removeItem("otp_flow");
+            router.replace(flow?.redirectTo || "/");
         } catch (err: any) {
             showError(parseApiError(err));
-            // Xoá ô nhập nếu OTP sai
             setDigits(Array(OTP_LENGTH).fill(""));
             inputRefs.current[0]?.focus();
         } finally {
@@ -96,7 +143,7 @@ export default function VerifyOtpPage() {
         if (cooldown > 0) return;
         setResending(true);
         try {
-            const res = await resendOtp(email);
+            const res = await resendOtp(email, flow.purpose);
             showSuccess(res.message);
             setCooldown(RESEND_COOLDOWN);
             setDigits(Array(OTP_LENGTH).fill(""));
@@ -109,9 +156,7 @@ export default function VerifyOtpPage() {
     };
 
     const allFilled = digits.every(d => d !== "");
-
-    // ─── Render ───────────────────────────────────────────────────────────────
-
+    if (!flow) return <Loader />;
     return (
         <div className="flex min-h-screen items-center justify-center px-4">
             <div className="w-full max-w-md rounded-2xl border-2 border-blue-800 bg-white p-8 shadow-lg">
@@ -143,7 +188,7 @@ export default function VerifyOtpPage() {
                             ref={el => { inputRefs.current[idx] = el; }}
                             type="text"
                             inputMode="numeric"
-                            maxLength={OTP_LENGTH}
+                            maxLength={1}
                             value={digit}
                             onChange={e => handleChange(idx, e.target.value)}
                             onKeyDown={e => handleKeyDown(idx, e)}
@@ -186,7 +231,7 @@ export default function VerifyOtpPage() {
                 {/* Back */}
                 <div className="border-t border-gray-100 pt-4 text-center">
                     <a
-                        href="/register"
+                        href={flow?.source || "/"}
                         className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600"
                     >
                         <ArrowLeft size={13} />

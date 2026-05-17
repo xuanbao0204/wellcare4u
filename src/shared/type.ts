@@ -506,3 +506,10 @@ export type PatientsSummaryDTO = {
   totalRecords: number;
   lastVisitDate: string;
 };
+
+type OtpFlow = {
+    purpose: "REGISTER" | "FORGOT_PASSWORD";
+    email: string;
+    redirectTo: string;
+    source: string;
+};

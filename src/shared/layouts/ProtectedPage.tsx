@@ -27,6 +27,11 @@ export default function ProtectedLayout({
                 router.replace("/403");
                 return;
             }
+
+            if (user.status != "ACTIVE") {
+                router.replace("/active-account");
+                return;
+            }
         }
     }, [user, loading, router, allowedRoles]);
 
