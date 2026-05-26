@@ -36,3 +36,12 @@ export const deleteAccount = async (password: string) => {
         throw error;
     }
 };
+
+export const resetPassword = async (email: string, password: string) => {
+    try {
+        const response = await api.put<ApiResponse<any>>("/account/reset-password", { email, password });
+        return response.data;
+    } catch (error: any) {
+        throw error;
+    }
+};

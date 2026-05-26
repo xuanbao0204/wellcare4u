@@ -77,8 +77,28 @@ export interface SendNotificationPayload {
     referenceId?: number;
 }
 
+export interface TrendsResponse {
+    periodLabel: string;
+    hasPrev: boolean;
+    hasNext: boolean;
+    trends: TrendPoint[];
+}
+
+export interface TrendPoint {
+    label: string;
+    users: number;
+    appointments: number;
+}
+
 export const getDashboardStats = async (): Promise<DashboardStats> => {
     const res = await api.get<ApiResponse<DashboardStats>>("/admin/dashboard/stats");
+    return res.data.data;
+};
+
+export const getTrendData = async (period: string, offset: number): Promise<TrendsResponse> => {
+    const res = await api.get<ApiResponse<TrendsResponse>>("/admin/dashboard/trends", {
+        params: { period, offset },
+    });
     return res.data.data;
 };
 

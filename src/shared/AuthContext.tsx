@@ -12,6 +12,7 @@ import api, { markAuthReady } from "@/lib/axios";
 import type { UserDTO } from "@/features/auth/type";
 import Loader from "./ui/Loader";
 import { useRedirectByRole } from "@/features/auth/redirectByRole";
+import { useQueryClient } from "@tanstack/react-query";
 
 type AuthContextType = {
     user: UserDTO | null;
@@ -30,6 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [authReady, setAuthReady] = useState(false);
     const router = useRouter();
     const redirectByRole = useRedirectByRole();
+
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         const initAuth = async () => {
@@ -181,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = useCallback(async () => {
         try {
             await api.post("/auth/logout");
+            queryClient.clear();
         } catch {
 
         }

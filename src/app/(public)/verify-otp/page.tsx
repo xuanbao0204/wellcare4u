@@ -6,7 +6,7 @@ import { showError, showSuccess } from "@/lib/toast";
 import { parseApiError } from "@/lib/parseError";
 import { ShieldCheck, RefreshCw, ArrowLeft, Mail } from "lucide-react";
 import Loader from "@/shared/ui/Loader";
-import { resendOtp, sendOtp, verifyOtp } from "@/features/otp/otpService";
+import { OtpType, resendOtp, sendOtp, verifyOtp } from "@/features/otp/otpService";
 import { activeAccount } from "@/features/account/accountService";
 
 const OTP_LENGTH = 6;
@@ -116,7 +116,7 @@ export default function VerifyOtpPage() {
         try {
             const res = await verifyOtp(email, code, flow.purpose);
             showSuccess(res.message);
-            if (flow.purpose === "ACTIVATE") {
+            if (flow.purpose === OtpType.ACTIVATE) {
                 const res = await activeAccount(email);
                 if (res.status !== 200)
                 {
@@ -126,6 +126,10 @@ export default function VerifyOtpPage() {
                 showSuccess(res.message);
                 router.push("/login");
                 sessionStorage.removeItem("otp_flow");
+                return;
+            }
+            if (flow.purpose === OtpType.FORGOT_PASSWORD) {
+                router.push("/reset-password");
                 return;
             }
             sessionStorage.removeItem("otp_flow");

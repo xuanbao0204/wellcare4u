@@ -13,9 +13,9 @@ type DoctorSelectStepProps = {
 export default function DoctorSelectStep({ selectedDoctor, onSelect }: DoctorSelectStepProps) {
     const [doctors, setDoctors] = useState<DoctorDTO[]>([]);
     const [keyword, setKeyword] = useState("");
-    const [page] = useState(0);
-    const [size] = useState(5);
-
+    const [page, setPage] = useState(0);
+    const [size] = useState(6);
+    const [totalPages, setTotalPages] = useState(0);
     useEffect(() => {
         const fetchDoctors = async () => {
             const res = await getAllDoctors({ page, size });
@@ -23,8 +23,9 @@ export default function DoctorSelectStep({ selectedDoctor, onSelect }: DoctorSel
                 showError(res.message);
                 return;
             }
-
             setDoctors(res.data.content);
+
+            setTotalPages(res.data.totalPages);
         };
 
         fetchDoctors();
@@ -87,6 +88,40 @@ export default function DoctorSelectStep({ selectedDoctor, onSelect }: DoctorSel
                         ))}
                     </div>
                 )}
+
+                <div className="mt-6 flex items-center justify-center gap-2">
+
+                    <button
+                        disabled={page === 0}
+                        onClick={() => setPage((prev) => prev - 1)}
+                        className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+
+                    {Array.from({ length: totalPages }).map((_, index) => (
+
+                        <button
+                            key={index}
+                            onClick={() => setPage(index)}
+                            className={`h-10 w-10 rounded-xl text-sm font-semibold transition ${page === index
+                                ? "bg-emerald-600 text-white"
+                                : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                                }`}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+
+                    <button
+                        disabled={page >= totalPages - 1}
+                        onClick={() => setPage((prev) => prev + 1)}
+                        className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+
+                </div>
             </div>
         </section>
     );

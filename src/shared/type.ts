@@ -508,7 +508,7 @@ export type PatientsSummaryDTO = {
 };
 
 type OtpFlow = {
-    purpose: "REGISTER" | "FORGOT_PASSWORD";
+    purpose: string;
     email: string;
     redirectTo: string;
     source: string;

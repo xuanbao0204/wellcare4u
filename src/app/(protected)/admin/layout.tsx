@@ -5,14 +5,12 @@ import { usePathname } from "next/navigation";
 import ProtectedLayout from "@/shared/layouts/ProtectedPage";
 
 const menu = [
-    { href: "/doctor/dashboard", label: "Dashboard" },
-    { href: "/doctor/appointments", label: "Lịch hẹn" },
-    { href: "/doctor/medical-records", label: "Hồ sơ bệnh án" },
-    { href: "/doctor/patients", label: "Bệnh nhân" },
-    { href: "/doctor/schedule", label: "Lịch làm việc" },
+    { href: "/admin/dashboard", label: "Dashboard" },
+    { href: "/admin/manage-posts", label: "Quản lý bài viết" },
+    { href: "/admin/manage-users", label: "Bệnh nhân" },
 ];
 
-export default function DoctorLayout({
+export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
@@ -20,7 +18,7 @@ export default function DoctorLayout({
     const pathname = usePathname();
 
     return (
-        <ProtectedLayout allowedRoles={["DOCTOR"]}>
+        <ProtectedLayout allowedRoles={["ADMIN"]}>
             <div className="w-full bg-background text-foreground">
                 <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
                     <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
@@ -28,7 +26,7 @@ export default function DoctorLayout({
                         {/* Sidebar */}
                         <aside className="rounded-2xl border border-primary/15 bg-white/90 p-4 shadow-sm">
                             <h1 className="mb-4 text-lg font-semibold text-primary">
-                                Doctor Panel
+                                Admin Panel
                             </h1>
 
                             <nav className="space-y-2">
@@ -55,7 +53,7 @@ export default function DoctorLayout({
                         </aside>
 
                         {/* Content */}
-                        <main className="min-h-[600px] rounded-2xl border border-primary/15 bg-white/90 p-6 shadow-sm">
+                        <main className="min-h-150 rounded-2xl border border-primary/15 bg-white/90 p-6 shadow-sm">
                             {children}
                         </main>
                     </div>
