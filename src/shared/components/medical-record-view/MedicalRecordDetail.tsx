@@ -426,6 +426,7 @@ const MedicalRecordDetailPage = ({ recordId }: Props) => {
                             title="Tái khám"
                             description="Thông tin lịch tái khám nếu đã được hẹn."
                             icon={<CalendarDays className="size-5" />}
+                            className="sticky top-[calc(100%-300px)]"
                         >
                             {followUpDate ? (
                                 <div className="rounded-[26px] border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.95),rgba(255,255,255,1))] p-5">

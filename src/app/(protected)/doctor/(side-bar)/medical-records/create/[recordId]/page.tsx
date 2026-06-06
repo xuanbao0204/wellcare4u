@@ -5,12 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
     Activity,
+    CalendarDays,
+    CheckCircle2,
     ClipboardPlus,
     FileText,
     FlaskConical,
     HeartPulse,
     Pill,
     Stethoscope,
+    UserRound,
 } from "lucide-react";
 import { finalizeRecord } from "@/features/doctor/medical-record/medicalRecordService";
 import {
@@ -51,17 +54,17 @@ function SectionCard({
 }: SectionCardProps) {
     return (
         <section
-            className={`rounded-[28px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_60px_-36px_rgba(15,23,42,0.38)] backdrop-blur ${className}`}
+            className={`rounded-[28px] border border-white/70 bg-white/82 p-5 shadow-[0_22px_64px_-42px_rgba(15,23,42,0.42)] backdrop-blur-xl sm:p-6 ${className}`}
         >
-            <div className="mb-6 flex items-start justify-between gap-4">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-3">
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/10 bg-primary/5 text-primary shadow-sm">
                         {icon}
                     </div>
                     <div>
-                        <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
+                        <h2 className="text-xl font-semibold tracking-tight text-slate-950">{title}</h2>
                         {description && (
-                            <p className="mt-1 text-sm text-slate-500">{description}</p>
+                            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">{description}</p>
                         )}
                     </div>
                 </div>
@@ -80,9 +83,9 @@ function EmptyState({
     description: string;
 }) {
     return (
-        <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50/80 px-6 py-12 text-center">
-            <p className="text-base font-medium text-slate-700">{title}</p>
-            <p className="mt-2 text-sm text-slate-500">{description}</p>
+        <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50/80 px-6 py-12 text-center shadow-inner shadow-white/60">
+            <p className="text-base font-semibold text-slate-800">{title}</p>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
         </div>
     );
 }
@@ -213,15 +216,15 @@ export default function MedicalExamPage() {
     if (!recordId) return <Loader />;
 
     return (
-        <div className="flex min-h-screen flex-col gap-6 overflow-hidden bg-[linear-gradient(180deg,#eef7f4_0%,#f7fafc_32%,#f8fafc_100%)] p-4 text-[15px] md:p-6 md:text-[16px]">
-            <section className="shrink-0 overflow-hidden rounded-[30px] border border-emerald-100/80 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_32%),linear-gradient(135deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] p-6 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.42)]">
+        <div className="flex min-h-screen flex-col gap-6 overflow-hidden bg-[linear-gradient(180deg,rgba(250,250,255,0.94),rgba(248,250,252,0.98))] p-4 text-[15px] md:p-6 md:text-[16px]">
+            <section className="shrink-0 overflow-hidden rounded-[30px] border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(0,10,156,0.13),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.12),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.96),rgba(255,255,255,0.78))] p-6 shadow-[0_28px_80px_-42px_rgba(15,23,42,0.42)] backdrop-blur-xl">
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                     <div className="max-w-2xl">
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-3 py-1 text-sm font-medium text-emerald-700">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/75 bg-white/72 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary shadow-sm">
                             <Activity className="size-4" />
                             Hồ sơ khám bệnh
                         </div>
-                        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                        <h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
                             Tạo bệnh án với bố cục rõ ràng như một phiếu khám thực tế
                         </h1>
                         <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 md:text-base">
@@ -231,33 +234,33 @@ export default function MedicalExamPage() {
                     </div>
 
                     <div className="grid w-full gap-3 sm:grid-cols-3 xl:max-w-xl">
-                        <div className="rounded-2xl border border-white/80 bg-white/80 p-4">
-                            <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-400">
+                        <div className="rounded-2xl border border-white/75 bg-white/70 p-4 shadow-sm backdrop-blur">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                                 Tiến độ
                             </p>
-                            <p className="mt-2 text-2xl font-semibold text-slate-900">
+                            <p className="mt-2 text-2xl font-semibold text-slate-950">
                                 {step}/{steps.length}
                             </p>
                             <p className="mt-1 text-sm text-slate-500">
                                 {completion}% quy trình hoàn tất
                             </p>
                         </div>
-                        <div className="rounded-2xl border border-white/80 bg-white/80 p-4">
-                            <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-400">
+                        <div className="rounded-2xl border border-white/75 bg-white/70 p-4 shadow-sm backdrop-blur">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                                 Xét nghiệm
                             </p>
-                            <p className="mt-2 text-2xl font-semibold text-slate-900">
+                            <p className="mt-2 text-2xl font-semibold text-slate-950">
                                 {tests.length}
                             </p>
                             <p className="mt-1 text-sm text-slate-500">
                                 Mục đang đính kèm
                             </p>
                         </div>
-                        <div className="rounded-2xl border border-white/80 bg-white/80 p-4">
-                            <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-400">
+                        <div className="rounded-2xl border border-white/75 bg-white/70 p-4 shadow-sm backdrop-blur">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                                 Kê đơn
                             </p>
-                            <p className="mt-2 text-2xl font-semibold text-slate-900">
+                            <p className="mt-2 text-2xl font-semibold text-slate-950">
                                 {prescriptionItems.length}
                             </p>
                             <p className="mt-1 text-sm text-slate-500">Thuốc trong toa</p>
@@ -267,21 +270,27 @@ export default function MedicalExamPage() {
 
                 {recordDetail && (
                     <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]">
-                        <div className="rounded-[28px] border border-white/80 bg-white/82 p-5 shadow-sm">
+                        <div className="rounded-[28px] border border-white/75 bg-white/78 p-5 shadow-sm backdrop-blur">
                             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                 <div className="flex items-center gap-4">
-                                    <Image
-                                        src={recordDetail.patient.avatar!}
-                                        alt={`${recordDetail.patient.firstName} ${recordDetail.patient.lastName}`}
-                                        width={64}
-                                        height={64}
-                                        className="size-16 rounded-2xl border border-slate-200 object-cover"
-                                    />
+                                    {recordDetail.patient.avatar ? (
+                                        <Image
+                                            src={recordDetail.patient.avatar}
+                                            alt={`${recordDetail.patient.firstName} ${recordDetail.patient.lastName}`}
+                                            width={64}
+                                            height={64}
+                                            className="size-16 rounded-2xl border border-white/80 object-cover shadow-sm"
+                                        />
+                                    ) : (
+                                        <div className="flex size-16 items-center justify-center rounded-2xl border border-primary/10 bg-primary/5 text-primary shadow-sm">
+                                            <UserRound className="size-7" />
+                                        </div>
+                                    )}
                                     <div>
-                                        <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                                             Bệnh nhân
                                         </p>
-                                        <h2 className="mt-1 text-xl font-semibold text-slate-900">
+                                        <h2 className="mt-1 text-xl font-semibold text-slate-950">
                                             {recordDetail.patient.firstName} {recordDetail.patient.lastName}
                                         </h2>
                                         <p className="mt-1 text-sm text-slate-500">
@@ -291,28 +300,29 @@ export default function MedicalExamPage() {
                                 </div>
 
                                 <div className="flex flex-wrap gap-2">
-                                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600">
+                                    <span className="inline-flex items-center gap-2 rounded-full border border-primary/10 bg-primary/5 px-3 py-1.5 text-sm font-medium text-primary">
+                                        <CalendarDays className="size-4" />
                                         {recordDetail.appointment?.slotDate || "Chưa có ngày khám"}
                                     </span>
-                                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600">
+                                    <span className="rounded-full border border-slate-200 bg-white/85 px-3 py-1.5 text-sm font-medium text-slate-600">
                                         {recordDetail.appointment?.slotTime || "Chưa có giờ khám"}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="rounded-[28px] border border-white/80 bg-slate-900 p-5 text-white shadow-sm">
-                            <p className="text-xs font-medium uppercase tracking-[0.22em] text-emerald-200/80">
+                        <div className="rounded-[28px] border border-slate-900/10 bg-slate-950 p-5 text-white shadow-sm">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-100/80">
                                 Tóm tắt nhanh
                             </p>
                             <div className="mt-4 grid grid-cols-2 gap-3">
-                                <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                                <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
                                     <p className="text-xs text-slate-300">Lý do khám</p>
                                     <p className="mt-2 line-clamp-2 text-sm text-white/90">
                                         {form.chiefComplaint || "Chưa cập nhật"}
                                     </p>
                                 </div>
-                                <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                                <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
                                     <p className="text-xs text-slate-300">Tái khám</p>
                                     <p className="mt-2 text-sm text-white/90">
                                         {followUpDate
@@ -326,11 +336,11 @@ export default function MedicalExamPage() {
                 )}
             </section>
 
-            <section className="shrink-0 rounded-[28px] border border-slate-200/80 bg-white/88 p-4 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.28)] backdrop-blur">
+            <section className="shrink-0 rounded-[28px] border border-white/70 bg-white/82 p-4 shadow-[0_22px_64px_-42px_rgba(15,23,42,0.42)] backdrop-blur-xl">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
                     <div className="w-full rounded-full bg-slate-100">
                         <div
-                            className="h-2 rounded-full bg-linear-to-r from-emerald-500 via-teal-500 to-cyan-500 transition-all"
+                            className="h-2 rounded-full bg-linear-to-r from-primary via-secondary to-emerald-500 transition-all"
                             style={{ width: `${completion}%` }}
                         />
                     </div>
@@ -347,21 +357,21 @@ export default function MedicalExamPage() {
                                     type="button"
                                     onClick={() => setStep(currentStep)}
                                     className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${active
-                                            ? "border-emerald-300 bg-emerald-50 text-emerald-800 shadow-sm"
+                                            ? "border-primary/20 bg-primary/5 text-primary shadow-sm"
                                             : done
-                                                ? "border-emerald-100 bg-emerald-50/60 text-emerald-700"
-                                                : "border-slate-200 bg-slate-50/80 text-slate-500 hover:border-slate-300"
+                                                ? "border-emerald-100 bg-emerald-50/70 text-emerald-700"
+                                                : "border-slate-200 bg-white/75 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
                                         }`}
                                 >
                                     <div
                                         className={`flex size-10 items-center justify-center rounded-2xl border ${active
-                                                ? "border-emerald-200 bg-white text-emerald-700"
+                                                ? "border-primary/15 bg-white text-primary"
                                                 : done
                                                     ? "border-emerald-100 bg-white text-emerald-600"
                                                     : "border-slate-200 bg-white text-slate-400"
                                             }`}
                                     >
-                                        {item.icon}
+                                        {done ? <CheckCircle2 className="size-4" /> : item.icon}
                                     </div>
                                     <div>
                                         <p className="text-xs uppercase tracking-[0.16em] text-current/60">
@@ -473,11 +483,11 @@ export default function MedicalExamPage() {
                         >
                             <div className="space-y-4">
                                 {bmi && (
-                                    <div className="rounded-3xl border border-emerald-100 bg-[linear-gradient(135deg,rgba(236,253,245,0.92),rgba(255,255,255,0.9))] p-5">
+                                    <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(239,246,255,0.82),rgba(255,255,255,0.9))] p-5 shadow-sm">
                                         <p className="text-sm text-slate-500">BMI</p>
                                         <div className="mt-3 flex items-end justify-between gap-3">
                                             <div>
-                                                <p className="text-3xl font-semibold text-slate-900">
+                                                <p className="text-3xl font-semibold text-slate-950">
                                                     {bmi.toFixed(1)}
                                                 </p>
                                                 <p className="mt-1 text-sm text-slate-500">
@@ -494,7 +504,7 @@ export default function MedicalExamPage() {
                                 )}
 
                                 {bloodPressureStatus && (
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                                    <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm">
                                         <p className="text-sm text-slate-500">Huyết áp</p>
                                         <div className="mt-2 flex items-center justify-between gap-3">
                                             <p className="text-base font-medium text-slate-900">
@@ -510,7 +520,7 @@ export default function MedicalExamPage() {
                                 )}
 
                                 {heartRateStatus && (
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                                    <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm">
                                         <p className="text-sm text-slate-500">Nhịp tim</p>
                                         <div className="mt-2 flex items-center justify-between gap-3">
                                             <p className="text-base font-medium text-slate-900">
@@ -526,7 +536,7 @@ export default function MedicalExamPage() {
                                 )}
 
                                 {bloodSugarStatus && (
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                                    <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm">
                                         <p className="text-sm text-slate-500">Đường huyết</p>
                                         <div className="mt-2 flex items-center justify-between gap-3">
                                             <p className="text-base font-medium text-slate-900">
@@ -577,35 +587,7 @@ export default function MedicalExamPage() {
                                 onChange={(e) => setForm({ ...form, symptoms: e.target.value })}
                             />
 
-                            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-                                <TextAreaInput
-                                    label="Chẩn đoán"
-                                    value={form.diagnosis}
-                                    rows={4}
-                                    className="rounded-2xl border-slate-200 bg-white"
-                                    onChange={(e) =>
-                                        setForm({ ...form, diagnosis: e.target.value })
-                                    }
-                                />
-
-                                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4">
-                                    <p className="mb-4 text-sm font-medium text-slate-600">
-                                        Mã bệnh theo ICD
-                                    </p>
-                                    <FloatingInput
-                                        label="Mã ICD"
-                                        value={form.icdCode}
-                                        className="rounded-2xl border-slate-200 bg-white"
-                                        onChange={(e) =>
-                                            setForm({ ...form, icdCode: e.target.value })
-                                        }
-                                    />
-                                    <p className="mt-3 text-xs leading-5 text-slate-500">
-                                        Dùng để chuẩn hóa chẩn đoán và thuận tiện cho thống kê
-                                        bệnh án sau này.
-                                    </p>
-                                </div>
-                            </div>
+                            
                         </div>
                     </SectionCard>
                 )}
@@ -618,7 +600,7 @@ export default function MedicalExamPage() {
                         actions={
                             <button
                                 type="button"
-                                className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
+                                className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary/10"
                                 onClick={() => setAddTestModal(true)}
                             >
                                 + Thêm xét nghiệm
@@ -635,7 +617,7 @@ export default function MedicalExamPage() {
                                 {tests.map((test, i) => (
                                     <article
                                         key={i}
-                                        className="rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.96))] p-5"
+                                        className="rounded-3xl border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.96))] p-5 shadow-sm"
                                     >
                                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                                             <div>
@@ -662,6 +644,36 @@ export default function MedicalExamPage() {
                                 ))}
                             </div>
                         )}
+
+                        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] mt-5">
+                                <TextAreaInput
+                                    label="Chẩn đoán"
+                                    value={form.diagnosis}
+                                    rows={4}
+                                    className="rounded-2xl border-slate-200 bg-white"
+                                    onChange={(e) =>
+                                        setForm({ ...form, diagnosis: e.target.value })
+                                    }
+                                />
+
+                                <div className="rounded-3xl border border-slate-200/80 bg-slate-50/75 p-4 shadow-sm">
+                                    <p className="mb-4 text-sm font-medium text-slate-600">
+                                        Mã bệnh theo ICD
+                                    </p>
+                                    <FloatingInput
+                                        label="Mã ICD"
+                                        value={form.icdCode}
+                                        className="rounded-2xl border-slate-200 bg-white"
+                                        onChange={(e) =>
+                                            setForm({ ...form, icdCode: e.target.value })
+                                        }
+                                    />
+                                    <p className="mt-3 text-xs leading-5 text-slate-500">
+                                        Dùng để chuẩn hóa chẩn đoán và thuận tiện cho thống kê
+                                        bệnh án sau này.
+                                    </p>
+                                </div>
+                            </div>
                     </SectionCard>
                 )}
 
@@ -682,7 +694,7 @@ export default function MedicalExamPage() {
                         actions={
                             <button
                                 type="button"
-                                className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
+                                className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary/10"
                                 onClick={() =>
                                     setPrescriptionItems((prev) => [
                                         ...prev,
@@ -713,9 +725,9 @@ export default function MedicalExamPage() {
                                     return (
                                         <article
                                             key={i}
-                                            className={`rounded-[28px] border p-5 transition-all ${isEditing
-                                                    ? "border-emerald-200 bg-emerald-50/40 shadow-sm"
-                                                    : "border-slate-200 bg-slate-50/70"
+                                            className={`rounded-3xl border p-5 transition-all ${isEditing
+                                                    ? "border-primary/20 bg-primary/5 shadow-sm"
+                                                    : "border-slate-200/80 bg-white/78 shadow-sm"
                                                 }`}
                                         >
                                             <div className="mb-4 flex items-center justify-between gap-4">
@@ -743,7 +755,7 @@ export default function MedicalExamPage() {
                                                         <button
                                                             type="button"
                                                             onClick={() => setEditingIndex(null)}
-                                                            className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+                                                            className="rounded-full border border-primary/15 bg-white px-3 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
                                                         >
                                                             Lưu
                                                         </button>
@@ -770,7 +782,7 @@ export default function MedicalExamPage() {
 
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <FloatingInput
-                                                    label="Tên thuốc"
+                                                    label="Tên thuốc: VD: Paracetamol 500mg"
                                                     value={item.drug || ""}
                                                     disabled={!isEditing}
                                                     className="rounded-2xl border-slate-200 bg-white"
@@ -780,7 +792,7 @@ export default function MedicalExamPage() {
                                                 />
 
                                                 <FloatingInput
-                                                    label="Liều dùng"
+                                                    label="Liều dùng: VD: 14 viên"
                                                     value={item.dosage || ""}
                                                     disabled={!isEditing}
                                                     className="rounded-2xl border-slate-200 bg-white"
@@ -790,7 +802,7 @@ export default function MedicalExamPage() {
                                                 />
 
                                                 <FloatingInput
-                                                    label="Tần suất"
+                                                    label="Tần suất sử dụng: VD: 2 lần/ngày"
                                                     value={item.frequency || ""}
                                                     disabled={!isEditing}
                                                     className="rounded-2xl border-slate-200 bg-white"
@@ -800,7 +812,7 @@ export default function MedicalExamPage() {
                                                 />
 
                                                 <FloatingInput
-                                                    label="Thời gian"
+                                                    label="Thời gian: VD: 7 ngày"
                                                     value={item.duration || ""}
                                                     disabled={!isEditing}
                                                     className="rounded-2xl border-slate-200 bg-white"
@@ -811,7 +823,7 @@ export default function MedicalExamPage() {
 
                                                 <div className="md:col-span-2">
                                                     <FloatingInput
-                                                        label="Hướng dẫn"
+                                                        label="Hướng dẫn: VD: Uống sau bữa ăn"
                                                         value={item.instruction || ""}
                                                         disabled={!isEditing}
                                                         className="rounded-2xl border-slate-200 bg-white"
@@ -858,7 +870,7 @@ export default function MedicalExamPage() {
                                 />
                             </div>
 
-                            <div className="rounded-[28px] border border-slate-200 bg-slate-50/80 p-5">
+                            <div className="rounded-3xl border border-slate-200/80 bg-slate-50/75 p-5 shadow-sm">
                                 <p className="text-sm font-medium text-slate-700">
                                     Lịch tái khám
                                 </p>
@@ -869,7 +881,7 @@ export default function MedicalExamPage() {
                                 <button
                                     type="button"
                                     onClick={() => setOpenFollowUp(true)}
-                                    className="mt-5 w-full rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                                    className="mt-5 w-full rounded-2xl border border-primary/15 bg-white px-4 py-3 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary/5"
                                 >
                                     Đặt ngày tái khám
                                 </button>
@@ -892,25 +904,13 @@ export default function MedicalExamPage() {
                                     </div>
                                 )}
 
-                                <FollowUpModal
-                                    doctorId={user.id!}
-                                    open={openFollowUp}
-                                    onClose={() => setOpenFollowUp(false)}
-                                    onSelect={(data) => {
-                                        setFollowUpDate(data);
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            followUpDate: data,
-                                        }));
-                                    }}
-                                />
                             </div>
                         </div>
                     </SectionCard>
                 )}
             </div>
 
-            <div className="sticky bottom-0 shrink-0 rounded-[28px] border border-slate-200/80 bg-white/92 p-4 shadow-[0_-18px_45px_-35px_rgba(15,23,42,0.55)] backdrop-blur">
+            <div className="sticky bottom-0 shrink-0 rounded-[28px] border border-white/70 bg-white/88 p-4 shadow-[0_-18px_50px_-36px_rgba(15,23,42,0.55)] backdrop-blur-xl">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <p className="text-sm font-medium text-slate-700">
@@ -924,7 +924,7 @@ export default function MedicalExamPage() {
                     <div className="flex w-full gap-3 md:w-auto">
                         <ActionButton
                             variant="secondary"
-                            className="rounded-2xl bg-slate-100 px-6 text-slate-700 shadow-none md:w-auto"
+                            className="rounded-2xl border border-slate-200 bg-white px-6 text-slate-700 shadow-sm md:w-auto"
                             onClick={() => setStep(step - 1)}
                             disabled={step === 1}
                         >
@@ -934,17 +934,17 @@ export default function MedicalExamPage() {
                         {step < 5 ? (
                             <ActionButton
                                 variant="primary"
-                                className="rounded-2xl px-6 md:w-auto"
+                                className="rounded-2xl px-6 shadow-sm md:w-auto"
                                 onClick={() => setStep(step + 1)}
                             >
                                 Tiếp tục
                             </ActionButton>
                         ) : (
                             <ActionButton
-                                className="rounded-2xl px-6 md:w-auto"
+                                className="rounded-2xl px-6 shadow-sm md:w-auto"
                                 onClick={async () => {
                                     await finalizeRecord(finalForm);
-                                    router.push("/doctor/medical-records");
+                                    router.push("/doctor/appointments");
                                 }}
                             >
                                 Hoàn tất bệnh án

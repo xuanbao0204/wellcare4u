@@ -11,7 +11,6 @@ import {
 import BookingStep from "@/features/patient/appointment/components/BookingStep";
 import ConfirmStep from "@/features/patient/appointment/components/ConfirmingStep";
 import DoctorSelectStep from "@/features/patient/appointment/components/DoctorSelect";
-import AIRobotMascot from "@/features/ai/components/AIRobotMascot";
 
 import { BookingData, DoctorDTO, SlotDTO } from "@/shared/type";
 
@@ -225,14 +224,12 @@ export default function CreateAppointmentPage() {
                             </div>
 
                             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-                                Đặt lịch theo quy trình rõ ràng như một cổng
-                                booking thực tế
+                                Đặt lịch khám nhanh chóng và dễ dàng
                             </h1>
 
                             <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/70 md:text-base">
                                 Chọn bác sĩ, xem lịch trống và xác nhận thông
-                                tin cuộc hẹn trong một luồng trực quan, dễ theo
-                                dõi trên cả desktop lẫn mobile.
+                                tin cuộc hẹn.
                             </p>
 
                             <div className="mt-5 flex flex-wrap gap-3">
@@ -509,13 +506,6 @@ export default function CreateAppointmentPage() {
                     </section>
                 </main>
             </div>
-
-            <AIRobotMascot
-                message={robotMessage}
-                onClick={() => {
-                    console.log("Robot clicked");
-                }}
-            />
         </div>
     );
 }

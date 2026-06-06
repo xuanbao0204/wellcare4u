@@ -1,8 +1,9 @@
 "use client";
 
-import { getPatientDashboard } from "@/features/patient/patientService";
+import { generatePatientSummary } from "@/features/aiTools/aiTools";
+import { getPatientDashboard, PatientDashboardDTO } from "@/features/patient/patientService";
 import { useAuth } from "@/shared/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Activity,
     ArrowRight,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 const quickActions = [
     {
@@ -55,8 +56,14 @@ const quickActions = [
 
 const PatientDashboardPage = () => {
     const { user } = useAuth();
+    const queryClient = useQueryClient();
 
-    const { data, isLoading, error } = useQuery({
+    const {
+        data,
+        isLoading,
+        error,
+        isSuccess
+    } = useQuery({
         queryKey: ["patient-dashboard", user?.id],
 
         queryFn: async () => {
@@ -68,14 +75,50 @@ const PatientDashboardPage = () => {
 
         staleTime: 1000 * 60 * 5,
         gcTime: 1000 * 60 * 30,
-
         refetchOnWindowFocus: false,
     });
+
+    const generateSummaryMutation = useMutation({
+        mutationFn: async () => {
+            const res = await generatePatientSummary();
+            return res.data;
+        },
+
+        onSuccess: (aiSummary) => {
+            queryClient.setQueryData(
+                ["patient-dashboard", user?.id],
+                (old:PatientDashboardDTO) => ({
+                    ...old,
+                    medicalSummary: {
+                        ...old.medicalSummary,
+                        aiSummary,
+                    },
+                })
+            );
+        },
+    });
+
+    useEffect(() => {
+        if (
+            isSuccess &&
+            data?.medicalSummary.aiSummary == null &&
+            !generateSummaryMutation.isPending &&
+            !generateSummaryMutation.isSuccess
+        ) {
+            generateSummaryMutation.mutate();
+        }
+    }, [
+        isSuccess,
+        data?.medicalSummary.aiSummary,
+        generateSummaryMutation.isPending,
+    ]);
 
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <p className="text-gray-500">Đang tải dashboard...</p>
+                <p className="text-gray-500">
+                    Đang tải dashboard...
+                </p>
             </div>
         );
     }
@@ -83,7 +126,9 @@ const PatientDashboardPage = () => {
     if (error || !data) {
         return (
             <div className="flex items-center justify-center py-20">
-                <p className="text-red-500">Không thể tải dữ liệu dashboard</p>
+                <p className="text-red-500">
+                    Không thể tải dữ liệu dashboard
+                </p>
             </div>
         );
     }
@@ -228,7 +273,8 @@ const PatientDashboardPage = () => {
 
                         <div className="mt-4 rounded-[22px] border border-primary/10 bg-white/80 p-4 shadow-sm">
                             <div className="prose prose-sm max-w-none whitespace-pre-line text-gray-700">
-                                {medicalSummary?.aiSummary || "Chưa có tóm tắt sức khỏe."}
+                                {medicalSummary?.aiSummary ? medicalSummary.aiSummary :
+                                generateSummaryMutation.isPending ? "Đang tạo tóm tắt..." : "Chưa có tóm tắt sức khỏe."}
                             </div>
                         </div>
 
@@ -273,7 +319,7 @@ const PatientDashboardPage = () => {
                         </div>
 
                         {upcomingAppointment ? (
-                            <div className="rounded-[24px] border border-primary/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(239,246,255,0.78))] p-4 shadow-sm">
+                            <div className="rounded-3xl border border-primary/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(239,246,255,0.78))] p-4 shadow-sm">
                                 <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
                                     <div className="flex items-center gap-4">
                                         <Image
@@ -555,7 +601,7 @@ function HeroMetric({
     icon: ReactNode;
 }) {
     return (
-        <div className="rounded-[24px] border border-white/80 bg-white/75 p-4 shadow-sm">
+        <div className="rounded-3xl border border-white/80 bg-white/75 p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <p className="text-sm text-gray-500">{label}</p>
@@ -683,7 +729,7 @@ function EmptyState({
     description: string;
 }) {
     return (
-        <div className="flex min-h-40 flex-col items-center justify-center rounded-[24px] border border-dashed border-primary/15 bg-[linear-gradient(180deg,rgba(248,250,252,0.85),rgba(255,255,255,0.72))] p-6 text-center">
+        <div className="flex min-h-40 flex-col items-center justify-center rounded-3xl border border-dashed border-primary/15 bg-[linear-gradient(180deg,rgba(248,250,252,0.85),rgba(255,255,255,0.72))] p-6 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/10 bg-white/80 text-primary shadow-sm">
                 {icon}
             </div>

@@ -286,7 +286,7 @@ export type CancelAppointmentRequest = {
 }
 
 export type EPostSortType = "NEWEST" | "MOST_LIKED" | "MOST_VIEWED" | "MOST_COMMENTED";
- 
+
 export interface AuthorResponse {
   id?: number;
   displayName: string;
@@ -294,7 +294,7 @@ export interface AuthorResponse {
   isDoctor: boolean;
   isVerifiedDoctor: boolean;
 }
- 
+
 export interface CommentResponse {
   id: number;
   content: string;
@@ -304,56 +304,121 @@ export interface CommentResponse {
   createdAt: string;
   replies: CommentResponse[];
 }
- 
+
 export interface PostSummaryResponse {
   id: number;
   title: string;
   contentPreview: string;
-  category: ESpecialization;
+  relatedSpecialization: ESpecialization;
+  category: EForumCategory;
   author: AuthorResponse;
   isAnonymous: boolean;
-  isVerifiedAnswer: boolean;
   viewCount: number;
   likes: number;
   commentCount: number;
   tags: string[];
   createdAt: string;
+  status: string;
+  isViolatingContent: boolean;
 }
- 
-export interface PostDetailResponse {
+
+export interface PostManageResponse {
   id: number;
   title: string;
   content: string;
-  category: ESpecialization;
+  relatedSpecialization?: ESpecialization;
+  category: EForumCategory;
   author: AuthorResponse;
   isAnonymous: boolean;
-  isVerifiedAnswer: boolean;
   viewCount: number;
   likes: number;
+  commentCount: number;
   tags: string[];
-  comments: CommentResponse[];
   createdAt: string;
+  status: string;
+  moderationResult?: ModerationResultResponse;
 }
- 
+
+export interface PostDetailResponse {
+  id: number;
+
+  title: string;
+
+  content: string;
+
+  relatedSpecialization: ESpecialization | null;
+
+  category: string;
+
+  author: AuthorResponse;
+
+  isAnonymous: boolean;
+
+  viewCount: number;
+
+  likes: number;
+
+  commentCount: number;
+
+  allowComment: boolean;
+
+  tags: string[];
+
+  comments: CommentResponse[];
+
+  createdAt: string;
+
+  status: string;
+
+  likedByCurrentUser: boolean;
+
+  violationCheck: ModerationResultResponse | null;
+}
+
+export interface ModerationResultResponse {
+  isViolating: boolean;
+
+  severity: string;
+
+  confidence: number;
+
+  reason: string;
+
+  violatingContent: string[];
+
+  categories: string[];
+
+  recommendedAction: string;
+
+  medicalEmergency: boolean;
+}
 export interface CreatePostRequest {
   title: string;
   content: string;
-  category: ESpecialization;
+
+  category: EForumCategory;
+
+  relatedSpecialization: ESpecialization | null;
+
   isAnonymous: boolean;
+
   tags: string[];
+
+  allowComment: boolean;
 }
- 
+
 export interface CreateCommentRequest {
   content: string;
   parentCommentId?: number;
 }
- 
 
- 
+
+
 export interface ForumFilterState {
   page: number;
   size: number;
-  category?: ESpecialization;
+  category?: EForumCategory;
+  specialization: ESpecialization | null;
   keyword?: string;
   sort: EPostSortType;
 }
@@ -440,42 +505,116 @@ export function getInitials(name: string): string {
 }
 
 export const SPECIALIZATION_COLORS: Record<ESpecialization, string> = {
-  [ESpecialization.TIM_MACH]:                  "bg-red-50 text-red-700",
-  [ESpecialization.NGOAI_LONG_NGUC_TIM_MACH]:  "bg-red-50 text-red-700",
-  [ESpecialization.DA_LIEU]:                   "bg-orange-50 text-orange-700",
-  [ESpecialization.PHAU_THUAT_THAM_MY]:        "bg-orange-50 text-orange-700",
-  [ESpecialization.TIEU_HOA_GAN_MAT]:          "bg-amber-50 text-amber-700",
-  [ESpecialization.THAN_KINH]:                 "bg-purple-50 text-purple-700",
-  [ESpecialization.NGOAI_THAN_KINH]:           "bg-purple-50 text-purple-700",
-  [ESpecialization.SUC_KHOE_TAM_THAN]:         "bg-indigo-50 text-indigo-700",
-  [ESpecialization.NOI_TIET]:                  "bg-yellow-50 text-yellow-700",
-  [ESpecialization.DINH_DUONG]:                "bg-yellow-50 text-yellow-700",
-  [ESpecialization.HO_HAP]:                    "bg-sky-50 text-sky-700",
-  [ESpecialization.THAN_TIET_NIEU]:            "bg-blue-50 text-blue-700",
-  [ESpecialization.CO_XUONG_KHOP]:             "bg-slate-100 text-slate-700",
-  [ESpecialization.CHAN_THUONG_CHINH_HINH]:    "bg-slate-100 text-slate-700",
-  [ESpecialization.HUYET_HOC]:                 "bg-rose-50 text-rose-700",
-  [ESpecialization.UNG_BUOU]:                  "bg-rose-50 text-rose-700",
-  [ESpecialization.TRUYEN_NHIEM]:              "bg-green-50 text-green-700",
-  [ESpecialization.NOI_TONG_QUAT]:             "bg-teal-50 text-teal-700",
-  [ESpecialization.NGOAI_TONG_QUAT]:           "bg-teal-50 text-teal-700",
-  [ESpecialization.SAN_PHU_KHOA]:              "bg-pink-50 text-pink-700",
-  [ESpecialization.NAM_KHOA]:                  "bg-blue-50 text-blue-700",
-  [ESpecialization.NHI_KHOA]:                  "bg-cyan-50 text-cyan-700",
-  [ESpecialization.TAI_MUI_HONG]:              "bg-violet-50 text-violet-700",
-  [ESpecialization.RANG_HAM_MAT]:              "bg-lime-50 text-lime-700",
-  [ESpecialization.NHAN_KHOA]:                 "bg-emerald-50 text-emerald-700",
-  [ESpecialization.CHAN_DOAN_HINH_ANH]:        "bg-sky-50 text-sky-700",
-  [ESpecialization.XET_NGHIEM]:                "bg-fuchsia-50 text-fuchsia-700",
-  [ESpecialization.GAY_ME_HOI_SUC]:            "bg-gray-100 text-gray-700",
-  [ESpecialization.PHUC_HOI_CHUC_NANG]:        "bg-green-50 text-green-700",
-  [ESpecialization.Y_HOC_CO_TRUYEN]:           "bg-amber-50 text-amber-700",
-  [ESpecialization.Y_HOC_GIA_DINH]:            "bg-teal-50 text-teal-700",
-  [ESpecialization.CAP_CUU]:                   "bg-red-100 text-red-800",
-  [ESpecialization.LAO_KHOA]:                  "bg-slate-100 text-slate-700",
+  [ESpecialization.TIM_MACH]: "bg-red-50 text-red-700",
+  [ESpecialization.NGOAI_LONG_NGUC_TIM_MACH]: "bg-red-50 text-red-700",
+  [ESpecialization.DA_LIEU]: "bg-orange-50 text-orange-700",
+  [ESpecialization.PHAU_THUAT_THAM_MY]: "bg-orange-50 text-orange-700",
+  [ESpecialization.TIEU_HOA_GAN_MAT]: "bg-amber-50 text-amber-700",
+  [ESpecialization.THAN_KINH]: "bg-purple-50 text-purple-700",
+  [ESpecialization.NGOAI_THAN_KINH]: "bg-purple-50 text-purple-700",
+  [ESpecialization.SUC_KHOE_TAM_THAN]: "bg-indigo-50 text-indigo-700",
+  [ESpecialization.NOI_TIET]: "bg-yellow-50 text-yellow-700",
+  [ESpecialization.DINH_DUONG]: "bg-yellow-50 text-yellow-700",
+  [ESpecialization.HO_HAP]: "bg-sky-50 text-sky-700",
+  [ESpecialization.THAN_TIET_NIEU]: "bg-blue-50 text-blue-700",
+  [ESpecialization.CO_XUONG_KHOP]: "bg-slate-100 text-slate-700",
+  [ESpecialization.CHAN_THUONG_CHINH_HINH]: "bg-slate-100 text-slate-700",
+  [ESpecialization.HUYET_HOC]: "bg-rose-50 text-rose-700",
+  [ESpecialization.UNG_BUOU]: "bg-rose-50 text-rose-700",
+  [ESpecialization.TRUYEN_NHIEM]: "bg-green-50 text-green-700",
+  [ESpecialization.NOI_TONG_QUAT]: "bg-teal-50 text-teal-700",
+  [ESpecialization.NGOAI_TONG_QUAT]: "bg-teal-50 text-teal-700",
+  [ESpecialization.SAN_PHU_KHOA]: "bg-pink-50 text-pink-700",
+  [ESpecialization.NAM_KHOA]: "bg-blue-50 text-blue-700",
+  [ESpecialization.NHI_KHOA]: "bg-cyan-50 text-cyan-700",
+  [ESpecialization.TAI_MUI_HONG]: "bg-violet-50 text-violet-700",
+  [ESpecialization.RANG_HAM_MAT]: "bg-lime-50 text-lime-700",
+  [ESpecialization.NHAN_KHOA]: "bg-emerald-50 text-emerald-700",
+  [ESpecialization.CHAN_DOAN_HINH_ANH]: "bg-sky-50 text-sky-700",
+  [ESpecialization.XET_NGHIEM]: "bg-fuchsia-50 text-fuchsia-700",
+  [ESpecialization.GAY_ME_HOI_SUC]: "bg-gray-100 text-gray-700",
+  [ESpecialization.PHUC_HOI_CHUC_NANG]: "bg-green-50 text-green-700",
+  [ESpecialization.Y_HOC_CO_TRUYEN]: "bg-amber-50 text-amber-700",
+  [ESpecialization.Y_HOC_GIA_DINH]: "bg-teal-50 text-teal-700",
+  [ESpecialization.CAP_CUU]: "bg-red-100 text-red-800",
+  [ESpecialization.LAO_KHOA]: "bg-slate-100 text-slate-700",
 };
 
 export const SPECIALIZATION_VALUES = Object.values(ESpecialization);
+
+export enum EForumCategory {
+  QANDA = "QANDA",
+  FAQ = "FAQ",
+
+  MEDICAL_KNOWLEDGE = "MEDICAL_KNOWLEDGE",
+  NUTRITION_LIFESTYLE = "NUTRITION_LIFESTYLE",
+  MEDICINE_GUIDE = "MEDICINE_GUIDE",
+
+  HEALTH_NEWS = "HEALTH_NEWS",
+  HOSPITAL_GUIDE = "HOSPITAL_GUIDE",
+  PATIENT_STORY = "PATIENT_STORY",
+}
+
+export const CATEGORY_LABELS = {
+  QANDA: "Hỏi đáp cùng bác sĩ",
+  FAQ: "Câu hỏi thường gặp",
+
+  MEDICAL_KNOWLEDGE: "Kiến thức y khoa",
+  NUTRITION_LIFESTYLE: "Dinh dưỡng & Sống khỏe",
+  MEDICINE_GUIDE: "Hướng dẫn sử dụng thuốc",
+
+  HEALTH_NEWS: "Tin tức y tế",
+  HOSPITAL_GUIDE: "Hướng dẫn đặt lịch",
+  PATIENT_STORY: "Câu chuyện người bệnh",
+};
+
+export const CATEGORY_CONFIG: Record<
+  EForumCategory,
+  {
+    label: string;
+    roles: string[];
+  }
+> = {
+  [EForumCategory.QANDA]: {
+    label: "Hỏi đáp cùng bác sĩ",
+    roles: ["PATIENT", "DOCTOR", "ADMIN"],
+  },
+
+  [EForumCategory.FAQ]: {
+    label: "Câu hỏi thường gặp",
+    roles: ["ADMIN"],
+  },
+
+  [EForumCategory.MEDICAL_KNOWLEDGE]: {
+    label: "Kiến thức y khoa",
+    roles: ["DOCTOR", "ADMIN"],
+  },
+
+  [EForumCategory.NUTRITION_LIFESTYLE]: {
+    label: "Dinh dưỡng & Sống khỏe",
+    roles: ["DOCTOR", "ADMIN"],
+  },
+
+  [EForumCategory.MEDICINE_GUIDE]: {
+    label: "Hướng dẫn sử dụng thuốc",
+    roles: ["DOCTOR", "ADMIN"],
+  },
+
+  [EForumCategory.HEALTH_NEWS]: {
+    label: "Tin tức y tế",
+    roles: ["DOCTOR", "ADMIN"],
+  },
+
+  [EForumCategory.HOSPITAL_GUIDE]: {
+    label: "Hướng dẫn đặt lịch",
+    roles: ["ADMIN"],
+  },
+
+  [EForumCategory.PATIENT_STORY]: {
+    label: "Câu chuyện người bệnh",
+    roles: ["PATIENT", "DOCTOR", "ADMIN"],
+  },
+};
 
 export interface RecordSummary {
   recordId: number;
@@ -508,8 +647,8 @@ export type PatientsSummaryDTO = {
 };
 
 type OtpFlow = {
-    purpose: string;
-    email: string;
-    redirectTo: string;
-    source: string;
+  purpose: string;
+  email: string;
+  redirectTo: string;
+  source: string;
 };

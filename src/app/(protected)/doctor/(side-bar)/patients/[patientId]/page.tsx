@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { PatientMedicalRecordsDTO, VitalSign } from "@/shared/type";
 import { getPatientDetail } from "@/features/doctor/patient-manage/patientManageService";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 function getAge(dob: string): number {
     const birth = new Date(dob);
@@ -35,7 +35,7 @@ function formatDateTime(dateStr: string): string {
     });
 }
 
-function VitalCard({ label, value, unit }: { label: string; value?: number; unit?: string }) {
+function VitalCard({ label, value, unit }: { label: string; value?: number | string; unit?: string }) {
     return (
         <div className="bg-gray-50 rounded-lg px-4 py-3">
             <p className="text-xs text-gray-500 mb-1">{label}</p>
@@ -104,7 +104,7 @@ export default function PatientDetailPage() {
                 onClick={() => router.back()}
                 className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-5 transition-colors"
             >
-                ← Back to patients
+                <ArrowLeft /> Quay lại
             </button>
 
             {/* Profile Header */}
@@ -127,8 +127,8 @@ export default function PatientDetailPage() {
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
                         <span className="capitalize">{patient.gender || "—"}</span>
                         <span>DOB: {formatDate(patient.dob)} ({getAge(patient.dob)} yrs)</span>
-                        <span>Last visit: {formatDate(patient.lastVisitDate)}</span>
-                        <span>{patient.totalRecords} records</span>
+                        <span>Gần nhất: {formatDate(patient.lastVisitDate)}</span>
+                        <span>{patient.totalRecords} bản ghi</span>
                     </div>
                 </div>
             </div>
@@ -137,16 +137,16 @@ export default function PatientDetailPage() {
             {latestVital && (
                 <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
                     <div className="flex items-center justify-between mb-3">
-                        <h2 className="font-semibold text-gray-800">Latest Vital Signs</h2>
+                        <h2 className="font-semibold text-gray-800">Chỉ số đo gần đây nhất</h2>
                         {latestVital.timestamp && (
                             <span className="text-xs text-gray-400">{formatDateTime(latestVital.timestamp)}</span>
                         )}
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        <VitalCard label="Heart Rate" value={latestVital.heartRate} unit="bpm" />
+                        <VitalCard label="Nhịp tim" value={latestVital.heartRate} unit="bpm" />
                         {/* Blood pressure special case */}
                         <div className="bg-gray-50 rounded-lg px-4 py-3">
-                            <p className="text-xs text-gray-500 mb-1">Blood Pressure</p>
+                            <p className="text-xs text-gray-500 mb-1">Huyết áp</p>
                             <p className="text-base font-semibold text-gray-800">
                                 {latestVital.bloodPressure != null &&
                                     latestVital.bloodPressure != null
@@ -154,9 +154,9 @@ export default function PatientDetailPage() {
                                     : "—"}
                             </p>
                         </div>
-                        <VitalCard label="Weight" value={latestVital.weight} unit="kg" />
-                        <VitalCard label="Height" value={latestVital.height} unit="cm" />
-                        <VitalCard label="BMI" value={latestVital.bmi} unit="" />
+                        <VitalCard label="Cân nặng" value={latestVital.weight} unit="kg" />
+                        <VitalCard label="Chiều cao" value={latestVital.height} unit="cm" />
+                        <VitalCard label="BMI" value={latestVital.bmi?.toFixed(1)} unit="" />
                     </div>
                 </div>
             )}
@@ -164,18 +164,17 @@ export default function PatientDetailPage() {
             {/* All Vital Signs History */}
             {patient.vitalSigns && patient.vitalSigns.length > 1 && (
                 <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
-                    <h2 className="font-semibold text-gray-800 mb-3">Vital Signs History</h2>
+                    <h2 className="font-semibold text-gray-800 mb-3">Lịch sử Chỉ số đo</h2>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="border-b border-gray-100">
                                 <tr className="text-left text-xs text-gray-500">
-                                    <th className="pb-2 pr-4">Date</th>
-                                    <th className="pb-2 pr-4">HR (bpm)</th>
-                                    <th className="pb-2 pr-4">BP (mmHg)</th>
-                                    <th className="pb-2 pr-4">Temp (°C)</th>
-                                    <th className="pb-2 pr-4">Weight (kg)</th>
-                                    <th className="pb-2 pr-4">Height (cm)</th>
-                                    <th className="pb-2">SpO₂ (%)</th>
+                                    <th className="pb-2 pr-4">Ngày</th>
+                                    <th className="pb-2 pr-4">Nhịp tim (bpm)</th>
+                                    <th className="pb-2 pr-4">Huyết áp (mmHg)</th>
+                                    <th className="pb-2 pr-4">Cân nặng (kg)</th>
+                                    <th className="pb-2 pr-4">Chiều cao (cm)</th>
+
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -210,13 +209,13 @@ export default function PatientDetailPage() {
             {/* Medical Records */}
             <div className="bg-white border border-gray-200 rounded-xl p-5">
                 <h2 className="font-semibold text-gray-800 mb-3">
-                    Medical Records
+                    Hồ sơ bệnh án
                     <span className="ml-2 text-xs font-normal text-gray-400">
                         ({sortedRecords.length})
                     </span>
                 </h2>
                 {sortedRecords.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-4 text-center">No records found.</p>
+                    <p className="text-sm text-gray-400 py-4 text-center">Không tìm thấy hồ sơ nào.</p>
                 ) : (
                     <div className="space-y-3">
                         {sortedRecords.map((record) => (
@@ -227,7 +226,7 @@ export default function PatientDetailPage() {
                                 <div className="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-800 truncate">
-                                        {record.diagnosis || "No diagnosis recorded"}
+                                        {record.diagnosis || "Không có chẩn đoán"}
                                     </p>
                                     <p className="text-xs text-gray-400 mt-0.5">
                                         {formatDateTime(record.createdAt)}

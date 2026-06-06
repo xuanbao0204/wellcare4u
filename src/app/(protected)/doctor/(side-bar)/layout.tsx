@@ -1,54 +1,47 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useAuth } from "@/shared/AuthContext";
+import AppSidebar, { SidebarConfig } from "@/shared/sections/SideBar";
+import { Bell, Calendar, CalendarDays, FileText, LayoutDashboard, LogOut, UserCircle } from "lucide-react";
 
-const menu = [
-    { href: "/doctor/dashboard", label: "Dashboard" },
-    { href: "/doctor/appointments", label: "Lịch hẹn" },
-    { href: "/doctor/medical-records", label: "Hồ sơ bệnh án" },
-    { href: "/doctor/patients", label: "Bệnh nhân" },
-    { href: "/doctor/schedule", label: "Lịch làm việc" },
-];
+
+
+const doctorConfig: SidebarConfig = {
+    role: "doctor",
+    roleLabel: "Bác sĩ",
+    avatarFallback: "BS",
+    menu: [
+        { href: "/doctor/dashboard", label: "Dashboard", icon: LayoutDashboard},
+        { href: "/doctor/appointments", label: "Lịch hẹn", icon: CalendarDays },
+        { href: "/doctor/patients", label: "Bệnh nhân", icon: UserCircle },
+        { href: "/doctor/schedule", label: "Lịch làm việc", icon: Calendar },
+        { href: "/doctor/manage-posts", label: "Quản lý bài viết", icon: FileText },
+        { href: "/doctor/manage-notifications", label: "Quản lý thông báo", icon: Bell },
+    ],
+    footer: (
+        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600">
+            <LogOut className="size-4" />
+            Đăng xuất
+        </button>
+    ),
+};
 
 export default function DoctorLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const pathname = usePathname();
-
+    const {user} = useAuth();
     return (
         <div className="w-full bg-background text-foreground">
             <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
                 <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
 
-                    <aside className="rounded-2xl border border-primary/15 bg-white/90 p-4 shadow-sm">
-                        <h1 className="mb-4 text-lg font-semibold text-primary">
-                            Doctor Panel
-                        </h1>
-
-                        <nav className="space-y-2">
-                            {menu.map((item) => {
-                                const isActive =
-                                    pathname === item.href ||
-                                    pathname.startsWith(item.href + "/");
-
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        className={`block w-full rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${isActive
-                                                ? "border-primary/30 bg-primary/10 text-primary"
-                                                : "border-transparent text-foreground/80 hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
-                                            }`}
-                                    >
-                                        {item.label}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-                    </aside>
+                    <AppSidebar
+                        config={doctorConfig}
+                        userName={`Dr. ${user?.firstName} ${user?.lastName}` || "BS. Unknown"}
+                        userEmail={user?.email || "Unknown email"}
+                    />
 
                     <main className="min-h-150 rounded-2xl border border-primary/15 bg-white/90 p-6 shadow-sm">
                         {children}

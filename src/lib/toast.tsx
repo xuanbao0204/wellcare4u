@@ -12,3 +12,6 @@ export const showInfo = (message: string) =>
 
 export const showWarn = (message: string) =>
   toast(<CustomToast type="warning" message={message} />);
+
+export const showNotification = (title: string, message: string) =>
+  toast(<CustomToast type="notification" title={title} message={message} />);

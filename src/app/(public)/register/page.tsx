@@ -100,7 +100,7 @@ const Register = () => {
             sessionStorage.setItem(
                 "otp_flow",
                 JSON.stringify({
-                    purpose: "REGISTER",
+                    purpose: "ACTIVATE",
                     email: form.email,
                     redirectTo: "/login",
                     source: "/register"

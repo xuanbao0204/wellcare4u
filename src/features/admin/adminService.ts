@@ -1,5 +1,6 @@
 import api from "@/lib/axios";
 import { ApiResponse, EPostSortType, ESpecialization, PageResponse, PostSummaryResponse } from "@/shared/type";
+import { UserDTO } from "../auth/type";
 
 export interface DashboardStats {
     totalAccounts: number;
@@ -90,6 +91,15 @@ export interface TrendPoint {
     appointments: number;
 }
 
+export interface AuditLog {
+    id: number;
+    actor: UserDTO;
+    action: string;
+    entityType: string;
+    entityId: number;
+    timestamp: string;
+}
+
 export const getDashboardStats = async (): Promise<DashboardStats> => {
     const res = await api.get<ApiResponse<DashboardStats>>("/admin/dashboard/stats");
     return res.data.data;
@@ -158,3 +168,18 @@ export const exportAccounts = () =>
 
 export const exportAppointments = () =>
     `${process.env.NEXT_PUBLIC_API_URL}/admin/export/appointments`;
+
+export const getAuditLogs = async (params: {
+    page?: number;
+    size?: number;
+    keyword?: string;
+}) => {
+    const query = new URLSearchParams(
+        Object.entries(params || {})
+            .filter(([_, v]) => v !== undefined && v !== null && v !== "")
+            .map(([k, v]) => [k, String(v)])
+    ).toString();
+    
+    const res = await api.get<ApiResponse<PageResponse<AuditLog>>>(`/admin/audit-logs?${query}`);
+    return res.data;
+}

@@ -3,19 +3,48 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProtectedLayout from "@/shared/layouts/ProtectedPage";
+import AppSidebar, { SidebarConfig } from "@/shared/sections/SideBar";
+import { useAuth } from "@/shared/AuthContext";
+import { BellDot, Calendar, CalendarDays, FileText, LayoutDashboard, LogOut, UserCircle } from "lucide-react";
 
 const menu = [
     { href: "/admin/dashboard", label: "Dashboard" },
     { href: "/admin/manage-posts", label: "Quản lý bài viết" },
     { href: "/admin/manage-users", label: "Bệnh nhân" },
+    { href: "/admin/manage-doctors", label: "Quản lý Bác sĩ" },
+    { href: "/admin/manage-notifications", label: "Quản lý thông báo" },
+    { href: "/admin/audit-logs", label: "Audit Logs" },
 ];
+
+const adminConfig: SidebarConfig = {
+    role: "admin",
+    roleLabel: "Quản trị viên",
+    avatarFallback: "Admin",
+    ctaHref: "/admin/dashboard",
+    ctaLabel: "Đến trang quản trị",
+    ctaIcon: Calendar,
+    menu: [
+        { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/admin/manage-posts", label: "Quản lý bài viết", icon: FileText },
+        { href: "/admin/manage-users", label: "Quản lý bệnh nhân", icon: UserCircle },
+        { href: "/admin/manage-doctors", label: "Quản lý Bác sĩ", icon: UserCircle },
+        { href: "/admin/manage-notifications", label: "Quản lý thông báo", icon: BellDot },
+        { href: "/admin/audit-logs", label: "Audit Logs", icon: CalendarDays },
+    ],
+    footer: (
+        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600">
+            <LogOut className="size-4" />
+            Đăng xuất
+        </button>
+    ),
+};
 
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const pathname = usePathname();
+    const {user} = useAuth();
 
     return (
         <ProtectedLayout allowedRoles={["ADMIN"]}>
@@ -23,37 +52,13 @@ export default function AdminLayout({
                 <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
                     <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
 
-                        {/* Sidebar */}
-                        <aside className="rounded-2xl border border-primary/15 bg-white/90 p-4 shadow-sm">
-                            <h1 className="mb-4 text-lg font-semibold text-primary">
-                                Admin Panel
-                            </h1>
+                        <AppSidebar
+                            config={adminConfig}
+                            userName={`Admin. ${user?.firstName} ${user?.lastName}` || "Admin. Unknown"}
+                            userEmail={user?.email || "Unknown email"}
+                        />
 
-                            <nav className="space-y-2">
-                                {menu.map((item) => {
-                                    const isActive =
-                                        pathname === item.href ||
-                                        pathname.startsWith(item.href + "/");
-
-                                    return (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            className={`block w-full rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${
-                                                isActive
-                                                    ? "border-primary/30 bg-primary/10 text-primary"
-                                                    : "border-transparent text-foreground/80 hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
-                                            }`}
-                                        >
-                                            {item.label}
-                                        </Link>
-                                    );
-                                })}
-                            </nav>
-                        </aside>
-
-                        {/* Content */}
-                        <main className="min-h-150 rounded-2xl border border-primary/15 bg-white/90 p-6 shadow-sm">
+                        <main className="min-h-full rounded-2xl border border-primary/15 bg-white/90 p-6 shadow-sm">
                             {children}
                         </main>
                     </div>

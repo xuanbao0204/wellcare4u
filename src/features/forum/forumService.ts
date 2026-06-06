@@ -9,12 +9,15 @@ import {
     CreateCommentRequest,
     ESpecialization,
     EPostSortType,
+    EForumCategory,
+    PostManageResponse,
 } from "@/shared/type";
 
 export const getAllPosts = async (params: {
     page?: number;
     size?: number;
-    category?: ESpecialization;
+    category?: EForumCategory;
+    relatedSpecialization?: ESpecialization;
     keyword?: string;
     sort?: EPostSortType;
 }) => {
@@ -29,6 +32,27 @@ export const getAllPosts = async (params: {
     );
     return res.data;
 };
+
+export const getAllPostsByUserId = async (params: {
+    page?: number;
+    size?: number;
+    category?: EForumCategory;
+    relatedSpecialization?: ESpecialization;
+    keyword?: string;
+    sort?: EPostSortType;
+}) => {
+    const query = new URLSearchParams(
+        Object.entries(params || {})
+            .filter(([_, v]) => v !== undefined && v !== null && v !== "")
+            .map(([k, v]) => [k, String(v)])
+    ).toString();
+
+    const res = await api.get<ApiResponse<PageResponse<PostManageResponse>>>(
+        `/forum/posts-manage?${query}`
+    );
+    return res.data;
+};
+
 
 export const getPostById = async (postId: number) => {
     const res = await api.get<ApiResponse<PostDetailResponse>>(`/forum/posts/${postId}`);
@@ -47,6 +71,11 @@ export const deletePost = async (postId: number) => {
 
 export const likePost = async (postId: number) => {
     const res = await api.post<ApiResponse<PostDetailResponse>>(`/forum/posts/${postId}/like`);
+    return res.data;
+};
+
+export const editPost = async (postId: number, req: CreatePostRequest) => {
+    const res = await api.put<ApiResponse<PostDetailResponse>>(`/forum/posts/${postId}`, req);
     return res.data;
 };
 

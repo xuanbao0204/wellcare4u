@@ -9,7 +9,7 @@ import {
     FileText,
     Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Loader from "@/shared/ui/Loader";
 import { showError } from "@/lib/toast";
@@ -19,6 +19,9 @@ import {
     getDoctorDashboardData,
 } from "@/features/doctor/doctorService";
 import { AppointmentDTO } from "@/shared/type";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/shared/AuthContext";
+import { generateDoctorSummary } from "@/features/aiTools/aiTools";
 
 const quickActions = [
     {
@@ -45,32 +48,82 @@ const quickActions = [
 ];
 
 export default function DoctorDashboardPage() {
-    const [loading, setLoading] = useState(true);
-    const [data, setData] =
-        useState<DoctorDashboardSnapshotDTO | null>(null);
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
+    const hasTriggeredRef = useRef(false);
+
+    const {
+        data,
+        isLoading,
+        isError,
+        error,
+        isSuccess,
+    } = useQuery({
+        queryKey: ["doctor-dashboard", user?.id],
+
+        queryFn: async () => {
+            const res = await getDoctorDashboardData();
+            return res.data;
+        },
+
+        enabled: !!user,
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const generateSummaryMutation = useMutation({
+        mutationFn: async () => {
+            const res = await generateDoctorSummary();
+            return res.data;
+        },
+
+        onSuccess: (aiSummary) => {
+            queryClient.setQueryData(
+                ["doctor-dashboard", user?.id],
+                (old: DoctorDashboardSnapshotDTO | undefined) =>
+                    old
+                        ? {
+                              ...old,
+                              aiSummary,
+                          }
+                        : old
+            );
+        },
+
+        onError: (err) => {
+            showError(parseApiError(err));
+        },
+    });
 
     useEffect(() => {
-        fetchDashboard();
-    }, []);
-
-    async function fetchDashboard() {
-        try {
-            setLoading(true);
-
-            const res = await getDoctorDashboardData();
-
-            setData(res.data);
-        } catch (err) {
-            showError(parseApiError(err));
-        } finally {
-            setLoading(false);
+        if (
+            isSuccess &&
+            data?.aiSummary == null &&
+            !generateSummaryMutation.isPending &&
+            !hasTriggeredRef.current
+        ) {
+            hasTriggeredRef.current = true;
+            generateSummaryMutation.mutate();
         }
-    }
+    }, [
+        isSuccess,
+        data?.aiSummary,
+        generateSummaryMutation.isPending,
+    ]);
 
-    if (loading || !data) {
+    if (isLoading) {
         return (
             <div className="flex min-h-[50vh] items-center justify-center">
                 <Loader />
+            </div>
+        );
+    }
+
+    if (isError || !data) {
+        return (
+            <div className="flex min-h-[50vh] items-center justify-center">
+                <p className="text-red-500">
+                    {parseApiError(error)}
+                </p>
             </div>
         );
     }
@@ -119,7 +172,7 @@ export default function DoctorDashboardPage() {
                         </div>
                     </div>
 
-                    <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-[440px]">
+                    <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-110">
                         <CompactMetric
                             label="Tổng lịch hẹn"
                             value={`${stats.totalAppointments ?? 0}`}
@@ -195,9 +248,9 @@ export default function DoctorDashboardPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-[24px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(248,250,252,0.9))] p-5 shadow-sm">
+                    <div className="rounded-3xl border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(248,250,252,0.9))] p-5 shadow-sm">
                         <p className="whitespace-pre-line text-sm leading-7 text-slate-600">
-                            {data.aiSummary || "Chưa có dữ liệu tổng hợp cho hôm nay."}
+                            {data.aiSummary ? data.aiSummary : generateSummaryMutation.isPending ? "Đang tạo tổng hợp..." : "Chưa có dữ liệu tổng hợp cho hôm nay."}
                         </p>
                     </div>
                 </div>
@@ -415,7 +468,7 @@ function QuickActionCard({
     return (
         <Link
             href={href}
-            className="group block rounded-[24px] border border-white/65 bg-white/74 p-5 shadow-[0_18px_44px_-38px_rgba(15,23,42,0.48)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/82"
+            className="group block rounded-3xl border border-white/65 bg-white/74 p-5 shadow-[0_18px_44px_-38px_rgba(15,23,42,0.48)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/82"
         >
             <div className="flex items-start justify-between gap-4">
                 <div
@@ -486,7 +539,7 @@ function CompactMetric({
 
 function EmptyState({ text }: { text: string }) {
     return (
-        <div className="flex min-h-40 flex-col items-center justify-center rounded-[24px] border border-dashed border-white/80 bg-white/50 px-6 text-center">
+        <div className="flex min-h-40 flex-col items-center justify-center rounded-3xl border border-dashed border-white/80 bg-white/50 px-6 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/80 bg-white/80 text-primary shadow-sm">
                 <FileText size={18} />
             </div>
@@ -515,9 +568,8 @@ function StatusBadge({ status }: { status: string }) {
 
     return (
         <div
-            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${
-                styles[status] ?? "border-slate-200 bg-slate-100 text-slate-700"
-            }`}
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${styles[status] ?? "border-slate-200 bg-slate-100 text-slate-700"
+                }`}
         >
             {labels[status] ?? status}
         </div>

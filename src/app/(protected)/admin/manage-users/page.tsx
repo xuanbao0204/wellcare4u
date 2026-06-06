@@ -208,24 +208,6 @@ export default function AdminUsersPage() {
                                                     onClick={() => handle(() => lockAccount(acc.id), acc.id)}
                                                 />
                                             )}
-                                            {acc.role === "DOCTOR" && !acc.verified && (
-                                                <ActionBtn
-                                                    title="Xác minh bác sĩ"
-                                                    icon={<ShieldCheck size={14} />}
-                                                    color="text-teal-600 hover:bg-teal-50"
-                                                    loading={actionLoading === acc.id}
-                                                    onClick={() => handle(() => verifyDoctor(acc.id), acc.id)}
-                                                />
-                                            )}
-                                            {acc.role === "DOCTOR" && acc.verified && (
-                                                <ActionBtn
-                                                    title="Hủy xác minh"
-                                                    icon={<ShieldOff size={14} />}
-                                                    color="text-orange-500 hover:bg-orange-50"
-                                                    loading={actionLoading === acc.id}
-                                                    onClick={() => handle(() => unverifyDoctor(acc.id), acc.id)}
-                                                />
-                                            )}
                                             {acc.status !== "DELETED" && (
                                                 <ActionBtn
                                                     title="Xoá"

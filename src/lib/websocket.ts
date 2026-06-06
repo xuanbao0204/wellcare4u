@@ -5,8 +5,7 @@ let client: Client | null = null;
 
 export const connectWS = (onMessage: (data: unknown) => void): void => {
   if (client?.active) {
-    client.deactivate();
-    client = null;
+    return;
   }
 
   const socket = new SockJS(`${process.env.NEXT_PUBLIC_HOST}/ws`);
@@ -17,13 +16,32 @@ export const connectWS = (onMessage: (data: unknown) => void): void => {
     connectHeaders: {},
 
     onConnect: () => {
+      console.log("[WS] Connected");
       client!.subscribe("/user/queue/notifications", (msg) => {
+        console.log(
+            "[WS] BROADCAST",
+            msg.body
+          );
         try {
           onMessage(JSON.parse(msg.body));
         } catch {
           console.error("[WS] Failed to parse notification payload", msg.body);
         }
       });
+
+      client!.subscribe(
+        "/topic/notifications",
+        (msg) => {
+          console.log(
+            "[WS] TOPIC",
+            msg.body
+          );
+
+          onMessage(
+            JSON.parse(msg.body)
+          );
+        }
+      );
     },
 
     onStompError: (frame) => {
@@ -44,27 +62,3 @@ export const disconnectWS = (): void => {
   }
   client = null;
 };
-
-
-// import SockJS from "sockjs-client";
-// import { Client } from "@stomp/stompjs";
-
-// let client: Client;
-
-// export const connectWS = (onMessage: (data: any) => void) => {
-//   if (client?.active) return;
-//   const socket = new SockJS("http://localhost:8600/ws");
-
-//   client = new Client({
-//     webSocketFactory: () => socket,
-//     reconnectDelay: 5000,
-
-//     onConnect: () => {
-//       client.subscribe("/user/queue/notifications", (msg) => {
-//         onMessage(JSON.parse(msg.body));
-//       });
-//     },
-//   });
-
-//   client.activate();
-// };
