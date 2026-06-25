@@ -427,6 +427,7 @@ export default function MedicalExamPage() {
                                         name="height"
                                         value={vital.height}
                                         className="rounded-2xl border-slate-200 bg-white pr-12"
+                                        required
                                         onChange={(e) =>
                                             setVital({ ...vital, height: Number(e.target.value) })
                                         }
@@ -441,6 +442,7 @@ export default function MedicalExamPage() {
                                         label="Cân nặng"
                                         name="weight"
                                         value={vital.weight}
+                                        required
                                         className="rounded-2xl border-slate-200 bg-white pr-12"
                                         onChange={(e) =>
                                             setVital({ ...vital, weight: Number(e.target.value) })
@@ -455,6 +457,7 @@ export default function MedicalExamPage() {
                                     <FloatingInput
                                         label="Huyết áp"
                                         name="bloodPressure"
+                                        required
                                         value={vital.bloodPressure}
                                         className="rounded-2xl border-slate-200 bg-white pr-16"
                                         onChange={(e) =>
@@ -470,6 +473,7 @@ export default function MedicalExamPage() {
                                     <FloatingInput
                                         label="Nhịp tim"
                                         name="heartRate"
+                                        required
                                         value={vital.heartRate}
                                         className="rounded-2xl border-slate-200 bg-white pr-14"
                                         onChange={(e) =>
@@ -485,6 +489,7 @@ export default function MedicalExamPage() {
                                     <FloatingInput
                                         label="Đường huyết"
                                         name="bloodSugar"
+                                        required
                                         value={vital.bloodSugar}
                                         className="rounded-2xl border-slate-200 bg-white pr-16"
                                         onChange={(e) =>
@@ -607,6 +612,7 @@ export default function MedicalExamPage() {
 
                             <TextAreaInput
                                 label="Triệu chứng"
+                                required
                                 value={form.symptoms}
                                 rows={4}
                                 className="rounded-2xl border-slate-200 bg-white"
@@ -676,6 +682,7 @@ export default function MedicalExamPage() {
                                 label="Chẩn đoán"
                                 value={form.diagnosis}
                                 rows={4}
+                                required
                                 className="rounded-2xl border-slate-200 bg-white"
                                 onChange={(e) =>
                                     setForm({ ...form, diagnosis: e.target.value })
@@ -689,6 +696,7 @@ export default function MedicalExamPage() {
                                 <FloatingInput
                                     label="Mã ICD"
                                     value={form.icdCode}
+                                    required
                                     className="rounded-2xl border-slate-200 bg-white"
                                     onChange={(e) =>
                                         setForm({ ...form, icdCode: e.target.value })
