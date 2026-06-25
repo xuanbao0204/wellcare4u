@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/shared/AuthContext";
 import AppSidebar, { SidebarConfig } from "@/shared/sections/SideBar";
-import { Calendar, CalendarDays, FileText, LayoutDashboard, LogOut, Pill, UserCircle } from "lucide-react";
+import { Bell, Calendar, CalendarDays, FileText, LayoutDashboard, LogOut, Pill, UserCircle } from "lucide-react";
 
 const patientConfig: SidebarConfig = {
     role: "patient",
@@ -18,6 +18,7 @@ const patientConfig: SidebarConfig = {
         { href: "/patient/prescriptions", label: "Đơn thuốc", icon: Pill },
         { href: "/patient/profile", label: "Hồ sơ cá nhân", icon: UserCircle },
         { href: "/patient/manage-posts", label: "Quản lý bài viết", icon: FileText },
+        { href: "/patient/notifications", label: "Thông báo", icon: Bell },
     ],
     footer: (
         <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600">

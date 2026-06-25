@@ -10,6 +10,7 @@ import { useAuth } from "@/shared/AuthContext";
 import { getPublicIdFromUrl } from "@/shared/services/uploadFile";
 import ActionButton from "@/shared/components/ActionButton";
 import Loader from "@/shared/ui/Loader";
+import { SPECIALIZATION_LABELS, SPECIALIZATION_VALUES } from "@/shared/type";
 
 export default function DoctorProfile() {
     const [form, setForm] = useState<any>(null);
@@ -248,7 +249,7 @@ export default function DoctorProfile() {
 
                         {isEditing && showDropdown && (
                             <div className="absolute z-10 mt-2 max-h-60 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
-                                {SPECIALIZATIONS
+                                {SPECIALIZATION_VALUES
                                     .filter((item) =>
                                         item
                                             .toLowerCase()
@@ -263,11 +264,11 @@ export default function DoctorProfile() {
                                             }}
                                             className="cursor-pointer px-4 py-2 text-sm hover:bg-primary/10"
                                         >
-                                            {item}
+                                            {SPECIALIZATION_LABELS[item]}
                                         </div>
                                     ))}
 
-                                {SPECIALIZATIONS.filter((item) =>
+                                {SPECIALIZATION_VALUES.filter((item) =>
                                     item
                                         .toLowerCase()
                                         .includes((form.specialization || "").toLowerCase())
@@ -398,38 +399,3 @@ export default function DoctorProfile() {
     );
 }
 
-const SPECIALIZATIONS = [
-    "Tim mạch",
-    "Da liễu",
-    "Tiêu hóa - Gan mật",
-    "Thần kinh",
-    "Nội tiết",
-    "Hô hấp",
-    "Thận - Tiết niệu",
-    "Cơ xương khớp",
-    "Huyết học",
-    "Truyền nhiễm",
-    "Nội tổng quát",
-    "Ngoại tổng quát",
-    "Ngoại thần kinh",
-    "Chấn thương chỉnh hình",
-    "Ngoại lồng ngực - Tim mạch",
-    "Nam khoa",
-    "Phẫu thuật thẩm mỹ",
-    "Sản phụ khoa",
-    "Nhi khoa",
-    "Tai Mũi Họng",
-    "Răng Hàm Mặt",
-    "Nhãn khoa",
-    "Sức khỏe tâm thần",
-    "Ung bướu",
-    "Chẩn đoán hình ảnh",
-    "Xét nghiệm",
-    "Gây mê hồi sức",
-    "Phục hồi chức năng",
-    "Dinh dưỡng",
-    "Y học cổ truyền",
-    "Y học gia đình",
-    "Cấp cứu",
-    "Lão khoa"
-];

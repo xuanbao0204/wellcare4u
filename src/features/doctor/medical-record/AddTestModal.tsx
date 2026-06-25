@@ -1,5 +1,6 @@
 "use client";
 
+import MedicalTestAutocomplete from "@/features/medical-records/components/MedicalTestAutoComplete";
 import { deleteFile, uploadToCloudinary } from "@/shared/services/uploadFile";
 import { MedicalTest } from "@/shared/type";
 import { useState } from "react";
@@ -98,14 +99,32 @@ export default function TestModal({ countTest, recordId, open, onClose, onAdd }:
 
                 <div className="space-y-4">
 
-                    <input
+                    {/* <input
                         placeholder="Tên xét nghiệm"
                         value={tempTest.testName}
+                        required
                         onChange={(e) =>
                             setTempTest({ ...tempTest, testName: e.target.value })
                         }
                         className="w-full bg-white/70 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/40"
-                    />
+                    /> */}
+
+<MedicalTestAutocomplete
+
+    value={tempTest.testName!}
+
+    onSelect={(test)=>{
+
+        setTempTest({
+
+            ...tempTest,
+            testName: test.code + " - " + test.name,
+
+        });
+
+    }}
+
+/>
 
                     <textarea
                         placeholder="Kết quả"

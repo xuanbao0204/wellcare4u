@@ -19,6 +19,7 @@ import { finalizeRecord } from "@/features/doctor/medical-record/medicalRecordSe
 import {
     BookingData,
     CreateRecordData,
+    DrugDTO,
     MedicalRecordDetail,
     MedicalTest,
     PrescriptionItem,
@@ -34,6 +35,8 @@ import FollowUpModal from "@/features/doctor/medical-record/FollowUpModal";
 import { useAuth } from "@/shared/AuthContext";
 import { getRecordDetail } from "@/features/medical-records/medicalRecordService";
 import { getBloodPressureLabel, getBloodSugarLabel, getBMILabel, getHeartRateLabel } from "@/lib/commonFunctions";
+import { searchDrugs } from "@/features/drug/drugService";
+import PrescriptionItemCard from "@/features/doctor/medical-record/PrescriptionCard";
 
 type SectionCardProps = {
     title: string;
@@ -106,6 +109,9 @@ export default function MedicalExamPage() {
     const [addTestModal, setAddTestModal] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
+    const [drugKeyword, setDrugKeyword] = useState("");
+    const [drugResults, setDrugResults] = useState<DrugDTO[]>([]);
+
     const [form, setForm] = useState<CreateRecordData>({
         recordId: Number(recordId),
         chiefComplaint: "",
@@ -152,6 +158,26 @@ export default function MedicalExamPage() {
 
         fetchData();
     }, [recordId]);
+
+    useEffect(() => {
+
+        const timeout = setTimeout(() => {
+
+            if (drugKeyword.trim().length >= 2) {
+
+                searchDrugs(drugKeyword)
+                    .then(setDrugResults);
+
+            } else {
+
+                setDrugResults([]);
+            }
+
+        }, 400);
+
+        return () => clearTimeout(timeout);
+
+    }, [drugKeyword]);
 
     const steps = [
         { label: "Sinh hiệu", icon: <HeartPulse className="size-4" /> },
@@ -357,18 +383,18 @@ export default function MedicalExamPage() {
                                     type="button"
                                     onClick={() => setStep(currentStep)}
                                     className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${active
-                                            ? "border-primary/20 bg-primary/5 text-primary shadow-sm"
-                                            : done
-                                                ? "border-emerald-100 bg-emerald-50/70 text-emerald-700"
-                                                : "border-slate-200 bg-white/75 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                                        ? "border-primary/20 bg-primary/5 text-primary shadow-sm"
+                                        : done
+                                            ? "border-emerald-100 bg-emerald-50/70 text-emerald-700"
+                                            : "border-slate-200 bg-white/75 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
                                         }`}
                                 >
                                     <div
                                         className={`flex size-10 items-center justify-center rounded-2xl border ${active
-                                                ? "border-primary/15 bg-white text-primary"
-                                                : done
-                                                    ? "border-emerald-100 bg-white text-emerald-600"
-                                                    : "border-slate-200 bg-white text-slate-400"
+                                            ? "border-primary/15 bg-white text-primary"
+                                            : done
+                                                ? "border-emerald-100 bg-white text-emerald-600"
+                                                : "border-slate-200 bg-white text-slate-400"
                                             }`}
                                     >
                                         {done ? <CheckCircle2 className="size-4" /> : item.icon}
@@ -587,7 +613,7 @@ export default function MedicalExamPage() {
                                 onChange={(e) => setForm({ ...form, symptoms: e.target.value })}
                             />
 
-                            
+
                         </div>
                     </SectionCard>
                 )}
@@ -646,34 +672,34 @@ export default function MedicalExamPage() {
                         )}
 
                         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] mt-5">
-                                <TextAreaInput
-                                    label="Chẩn đoán"
-                                    value={form.diagnosis}
-                                    rows={4}
+                            <TextAreaInput
+                                label="Chẩn đoán"
+                                value={form.diagnosis}
+                                rows={4}
+                                className="rounded-2xl border-slate-200 bg-white"
+                                onChange={(e) =>
+                                    setForm({ ...form, diagnosis: e.target.value })
+                                }
+                            />
+
+                            <div className="rounded-3xl border border-slate-200/80 bg-slate-50/75 p-4 shadow-sm">
+                                <p className="mb-4 text-sm font-medium text-slate-600">
+                                    Mã bệnh theo ICD
+                                </p>
+                                <FloatingInput
+                                    label="Mã ICD"
+                                    value={form.icdCode}
                                     className="rounded-2xl border-slate-200 bg-white"
                                     onChange={(e) =>
-                                        setForm({ ...form, diagnosis: e.target.value })
+                                        setForm({ ...form, icdCode: e.target.value })
                                     }
                                 />
-
-                                <div className="rounded-3xl border border-slate-200/80 bg-slate-50/75 p-4 shadow-sm">
-                                    <p className="mb-4 text-sm font-medium text-slate-600">
-                                        Mã bệnh theo ICD
-                                    </p>
-                                    <FloatingInput
-                                        label="Mã ICD"
-                                        value={form.icdCode}
-                                        className="rounded-2xl border-slate-200 bg-white"
-                                        onChange={(e) =>
-                                            setForm({ ...form, icdCode: e.target.value })
-                                        }
-                                    />
-                                    <p className="mt-3 text-xs leading-5 text-slate-500">
-                                        Dùng để chuẩn hóa chẩn đoán và thuận tiện cho thống kê
-                                        bệnh án sau này.
-                                    </p>
-                                </div>
+                                <p className="mt-3 text-xs leading-5 text-slate-500">
+                                    Dùng để chuẩn hóa chẩn đoán và thuận tiện cho thống kê
+                                    bệnh án sau này.
+                                </p>
                             </div>
+                        </div>
                     </SectionCard>
                 )}
 
@@ -699,7 +725,8 @@ export default function MedicalExamPage() {
                                     setPrescriptionItems((prev) => [
                                         ...prev,
                                         {
-                                            drug: "",
+                                            drugId: null,
+                                            drugName: "",
                                             dosage: "",
                                             frequency: "",
                                             duration: "",
@@ -718,124 +745,214 @@ export default function MedicalExamPage() {
                                 description="Thêm thuốc, liều dùng và hướng dẫn để hoàn tất phần kê đơn."
                             />
                         ) : (
+                            // <div className="space-y-5">
+                            //     {prescriptionItems.map((item, i) => {
+                            //         const isEditing = editingIndex === i;
+
+                            //         return (
+                            //             <article
+                            //                 key={i}
+                            //                 className={`rounded-3xl border p-5 transition-all ${isEditing
+                            //                     ? "border-primary/20 bg-primary/5 shadow-sm"
+                            //                     : "border-slate-200/80 bg-white/78 shadow-sm"
+                            //                     }`}
+                            //             >
+                            //                 <div className="mb-4 flex items-center justify-between gap-4">
+                            //                     <div>
+                            //                         <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                            //                             Thuốc {i + 1}
+                            //                         </p>
+                            //                         <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                            //                             {item.drug || "Thuốc mới"}
+                            //                         </h3>
+                            //                     </div>
+
+                            //                     <div className="flex gap-2">
+                            //                         {!isEditing && (
+                            //                             <button
+                            //                                 type="button"
+                            //                                 onClick={() => setEditingIndex(i)}
+                            //                                 className="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-white"
+                            //                             >
+                            //                                 Chỉnh sửa
+                            //                             </button>
+                            //                         )}
+
+                            //                         {isEditing && (
+                            //                             <button
+                            //                                 type="button"
+                            //                                 onClick={() => setEditingIndex(null)}
+                            //                                 className="rounded-full border border-primary/15 bg-white px-3 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
+                            //                             >
+                            //                                 Lưu
+                            //                             </button>
+                            //                         )}
+
+                            //                         <button
+                            //                             type="button"
+                            //                             onClick={() => {
+                            //                                 const newItems = prescriptionItems.filter(
+                            //                                     (_, index) => index !== i,
+                            //                                 );
+                            //                                 setPrescriptionItems(newItems);
+
+                            //                                 if (editingIndex === i) {
+                            //                                     setEditingIndex(null);
+                            //                                 }
+                            //                             }}
+                            //                             className="rounded-full border border-rose-200 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+                            //                         >
+                            //                             Xóa
+                            //                         </button>
+                            //                     </div>
+                            //                 </div>
+
+                            //                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            //                     <div className="relative">
+
+                            //                         <FloatingInput
+                            //                             label="Tìm thuốc"
+                            //                             value={drugKeyword}
+                            //                             disabled={!isEditing}
+                            //                             onChange={(e) =>
+                            //                                 setDrugKeyword(e.target.value)
+                            //                             }
+                            //                         />
+
+                            //                         {drugResults.length > 0 && (
+                            //                             <div
+                            //                                 className="
+                            //                                     absolute
+                            //                                     z-50
+                            //                                     mt-2
+                            //                                     w-full
+                            //                                     rounded-xl
+                            //                                     border
+                            //                                     bg-white
+                            //                                     shadow-lg
+                            //                                     max-h-60
+                            //                                     overflow-auto
+                            //                                 "
+                            //                             >
+                            //                                 {drugResults.map((drug) => (
+
+                            //                                     <button
+                            //                                         key={drug.id}
+                            //                                         type="button"
+                            //                                         className="
+                            //                                             w-full
+                            //                                             px-4
+                            //                                             py-3
+                            //                                             text-left
+                            //                                             hover:bg-slate-50
+                            //                                         "
+                            //                                         onClick={() => {
+
+                            //                                             updateItem(
+                            //                                                 i,
+                            //                                                 "drugId",
+                            //                                                 drug.id.toString()
+                            //                                             );
+
+                            //                                             updateItem(
+                            //                                                 i,
+                            //                                                 "drugName",
+                            //                                                 drug.name
+                            //                                             );
+
+                            //                                             setDrugKeyword("");
+
+                            //                                             setDrugResults([]);
+                            //                                         }}
+                            //                                     >
+                            //                                         <div className="font-medium">
+                            //                                             {drug.name}
+                            //                                         </div>
+
+                            //                                         <div className="text-xs text-slate-500">
+                            //                                             {drug.category}
+                            //                                         </div>
+
+                            //                                     </button>
+                            //                                 ))}
+                            //                             </div>
+                            //                         )}
+
+                            //                     </div>
+
+                            //                     <FloatingInput
+                            //                         label="Liều dùng: VD: 14 viên"
+                            //                         value={item.dosage || ""}
+                            //                         disabled={!isEditing}
+                            //                         className="rounded-2xl border-slate-200 bg-white"
+                            //                         onChange={(e) =>
+                            //                             updateItem(i, "dosage", e.target.value)
+                            //                         }
+                            //                     />
+
+                            //                     <FloatingInput
+                            //                         label="Tần suất sử dụng: VD: 2 lần/ngày"
+                            //                         value={item.frequency || ""}
+                            //                         disabled={!isEditing}
+                            //                         className="rounded-2xl border-slate-200 bg-white"
+                            //                         onChange={(e) =>
+                            //                             updateItem(i, "frequency", e.target.value)
+                            //                         }
+                            //                     />
+
+                            //                     <FloatingInput
+                            //                         label="Thời gian: VD: 7 ngày"
+                            //                         value={item.duration || ""}
+                            //                         disabled={!isEditing}
+                            //                         className="rounded-2xl border-slate-200 bg-white"
+                            //                         onChange={(e) =>
+                            //                             updateItem(i, "duration", e.target.value)
+                            //                         }
+                            //                     />
+
+                            //                     <div className="md:col-span-2">
+                            //                         <FloatingInput
+                            //                             label="Hướng dẫn: VD: Uống sau bữa ăn"
+                            //                             value={item.instruction || ""}
+                            //                             disabled={!isEditing}
+                            //                             className="rounded-2xl border-slate-200 bg-white"
+                            //                             onChange={(e) =>
+                            //                                 updateItem(i, "instruction", e.target.value)
+                            //                             }
+                            //                         />
+                            //                     </div>
+                            //                 </div>
+                            //             </article>
+                            //         );
+                            //     })}
+                            // </div>
                             <div className="space-y-5">
-                                {prescriptionItems.map((item, i) => {
-                                    const isEditing = editingIndex === i;
+                                {prescriptionItems.map((item, index) => (
+                                    <PrescriptionItemCard
+                                        key={index}
+                                        item={item}
+                                        index={index}
+                                        isEditing={editingIndex === index}
+                                        onEdit={() => setEditingIndex(index)}
+                                        onSave={() => setEditingIndex(null)}
+                                        onDelete={() => {
+                                            setPrescriptionItems((prev) =>
+                                                prev.filter((_, i) => i !== index)
+                                            );
 
-                                    return (
-                                        <article
-                                            key={i}
-                                            className={`rounded-3xl border p-5 transition-all ${isEditing
-                                                    ? "border-primary/20 bg-primary/5 shadow-sm"
-                                                    : "border-slate-200/80 bg-white/78 shadow-sm"
-                                                }`}
-                                        >
-                                            <div className="mb-4 flex items-center justify-between gap-4">
-                                                <div>
-                                                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                                                        Thuốc {i + 1}
-                                                    </p>
-                                                    <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                                                        {item.drug || "Thuốc mới"}
-                                                    </h3>
-                                                </div>
-
-                                                <div className="flex gap-2">
-                                                    {!isEditing && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setEditingIndex(i)}
-                                                            className="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-white"
-                                                        >
-                                                            Chỉnh sửa
-                                                        </button>
-                                                    )}
-
-                                                    {isEditing && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setEditingIndex(null)}
-                                                            className="rounded-full border border-primary/15 bg-white px-3 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
-                                                        >
-                                                            Lưu
-                                                        </button>
-                                                    )}
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const newItems = prescriptionItems.filter(
-                                                                (_, index) => index !== i,
-                                                            );
-                                                            setPrescriptionItems(newItems);
-
-                                                            if (editingIndex === i) {
-                                                                setEditingIndex(null);
-                                                            }
-                                                        }}
-                                                        className="rounded-full border border-rose-200 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
-                                                    >
-                                                        Xóa
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                <FloatingInput
-                                                    label="Tên thuốc: VD: Paracetamol 500mg"
-                                                    value={item.drug || ""}
-                                                    disabled={!isEditing}
-                                                    className="rounded-2xl border-slate-200 bg-white"
-                                                    onChange={(e) =>
-                                                        updateItem(i, "drug", e.target.value)
-                                                    }
-                                                />
-
-                                                <FloatingInput
-                                                    label="Liều dùng: VD: 14 viên"
-                                                    value={item.dosage || ""}
-                                                    disabled={!isEditing}
-                                                    className="rounded-2xl border-slate-200 bg-white"
-                                                    onChange={(e) =>
-                                                        updateItem(i, "dosage", e.target.value)
-                                                    }
-                                                />
-
-                                                <FloatingInput
-                                                    label="Tần suất sử dụng: VD: 2 lần/ngày"
-                                                    value={item.frequency || ""}
-                                                    disabled={!isEditing}
-                                                    className="rounded-2xl border-slate-200 bg-white"
-                                                    onChange={(e) =>
-                                                        updateItem(i, "frequency", e.target.value)
-                                                    }
-                                                />
-
-                                                <FloatingInput
-                                                    label="Thời gian: VD: 7 ngày"
-                                                    value={item.duration || ""}
-                                                    disabled={!isEditing}
-                                                    className="rounded-2xl border-slate-200 bg-white"
-                                                    onChange={(e) =>
-                                                        updateItem(i, "duration", e.target.value)
-                                                    }
-                                                />
-
-                                                <div className="md:col-span-2">
-                                                    <FloatingInput
-                                                        label="Hướng dẫn: VD: Uống sau bữa ăn"
-                                                        value={item.instruction || ""}
-                                                        disabled={!isEditing}
-                                                        className="rounded-2xl border-slate-200 bg-white"
-                                                        onChange={(e) =>
-                                                            updateItem(i, "instruction", e.target.value)
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
+                                            if (editingIndex === index) {
+                                                setEditingIndex(null);
+                                            }
+                                        }}
+                                        onChange={(updatedItem) => {
+                                            setPrescriptionItems((prev) =>
+                                                prev.map((p, i) =>
+                                                    i === index ? updatedItem : p
+                                                )
+                                            );
+                                        }}
+                                    />
+                                ))}
                             </div>
                         )}
                     </SectionCard>

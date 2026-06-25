@@ -11,7 +11,7 @@ export type NotificationType =
   | "SYSTEM"
   | "INFO"
   | "WARNING"
-  | "REMINDER";
+  | "REMIND";
 
 // export type NotificationRequest =
 //   | {
@@ -75,6 +75,12 @@ export const sendNotification = async (
 
   return res.data;
 };
+
+export const getNotificationsBySender = async () => {
+  const res = await api.get<ApiResponse<NotificationDTO[]>>("/notifications/by-sender");
+  return res.data;
+};
+
 
 //Doctor area
 export const getMyPatients = async (): Promise<Record<number, string>> => {

@@ -16,6 +16,7 @@ const doctorConfig: SidebarConfig = {
         { href: "/doctor/patients", label: "Bệnh nhân", icon: UserCircle },
         { href: "/doctor/schedule", label: "Lịch làm việc", icon: Calendar },
         { href: "/doctor/manage-posts", label: "Quản lý bài viết", icon: FileText },
+        {href: "/doctor/notifications", label: "Thông báo", icon: Bell },
         { href: "/doctor/manage-notifications", label: "Quản lý thông báo", icon: Bell },
     ],
     footer: (

@@ -250,7 +250,7 @@ export default function AppointmentsPage() {
       );
     }
 
-    if (appointment.status === "CONFIRMED") {
+    if (appointment.status === "CONFIRMED" && appointment.checkedIn) {
       return (
         <>
           <button

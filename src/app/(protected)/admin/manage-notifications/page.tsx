@@ -11,6 +11,7 @@ export default function NotificationPage() {
           "BROADCAST",
           "ROLE"
         ]}
+        receiverEndpoint="/admin/notifications/get-recipients"
       />
 
     </div>

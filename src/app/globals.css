@@ -31,10 +31,12 @@
     opacity: 0;
     transform: translateX(40px) scale(0.95);
   }
+
   60% {
     opacity: 1;
     transform: translateX(-4px) scale(1.02);
   }
+
   100% {
     transform: translateX(0) scale(1);
   }
@@ -49,6 +51,7 @@
     opacity: 0;
     transform: translateY(18px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -56,10 +59,12 @@
 }
 
 @keyframes heroFloat {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -78,4 +83,40 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  #medical-record-print {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  img {
+    max-width: 100%;
+  }
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
 }

@@ -63,6 +63,7 @@ export default function FloatingInput({
                     top-1/2
                     -translate-y-1/2
                     bg-background px-1
+                    rounded
                     text-gray-500
                     transition-all
                     pointer-events-none

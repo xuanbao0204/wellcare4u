@@ -15,9 +15,9 @@ import {
     Stethoscope,
     UserRound,
 } from "lucide-react";
-import { getRecordDetail } from "@/features/medical-records/medicalRecordService";
+import { getRecordDetail, getRecordDetailPrint } from "@/features/medical-records/medicalRecordService";
 import { showError } from "@/lib/toast";
-import { AppointmentType, MedicalRecordDetail } from "@/shared/type";
+import { AppointmentType, MedicalRecordDetail, MedicalRecordDetailPrint } from "@/shared/type";
 import Badge from "@/shared/ui/Badge";
 
 type Props = {
@@ -94,7 +94,7 @@ const MedicalRecordDetailPage = ({ recordId }: Props) => {
     return (
         <div className="min-h-screen bg-[linear-gradient(180deg,#eef7f4_0%,#f7fafc_28%,#f8fafc_100%)] px-4 py-6 md:px-6 md:py-10">
             <div className="mx-auto max-w-7xl space-y-6">
-                <section className="overflow-hidden rounded-[30px] border border-emerald-100/70 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-6 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.42)]">
+                <section className="overflow-hidden rounded-[30px] border border-emerald-100/70 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-6 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.42)]">
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                         <div className="flex flex-col gap-4">
                             <div className="flex flex-wrap items-center gap-3">
@@ -129,6 +129,15 @@ const MedicalRecordDetailPage = ({ recordId }: Props) => {
                                 <span className="rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm text-slate-600">
                                     {getAppointmentTypeLabel(data.appointment?.type) || "Chưa có loại lịch hẹn"}
                                 </span>
+                            </div>
+
+                            <div className="">
+                                <button
+                                    className=""
+                                    onClick={() => {
+                                        router.push(`/medical-records/${recordId}/print-preview`);
+                                    }
+                                    }>In bệnh án</button>
                             </div>
                         </div>
 
@@ -321,7 +330,7 @@ const MedicalRecordDetailPage = ({ recordId }: Props) => {
                                 <div className="space-y-4">
                                     {data.items.map((item, index) => (
                                         <article
-                                            key={item.id}
+                                            key={item.drugId}
                                             className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-38px_rgba(15,23,42,0.55)]"
                                         >
                                             <div className="flex gap-4">
@@ -331,7 +340,7 @@ const MedicalRecordDetailPage = ({ recordId }: Props) => {
 
                                                 <div className="min-w-0 flex-1">
                                                     <h3 className="text-lg font-semibold text-slate-900">
-                                                        {item.drug || "Chưa có tên thuốc"}
+                                                        {item.drugName || "Chưa có tên thuốc"}
                                                     </h3>
 
                                                     <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
@@ -484,7 +493,7 @@ const Panel = ({
 );
 
 const DetailCard = ({ title, value }: DetailRowProps) => (
-    <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-4">
+    <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4">
         <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
             {title}
         </p>
@@ -495,7 +504,7 @@ const DetailCard = ({ title, value }: DetailRowProps) => (
 );
 
 const MetricCard = ({ label, value, hint }: MetricCardProps) => (
-    <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.95))] p-4">
+    <div className="rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.95))] p-4">
         <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
             {label}
         </p>

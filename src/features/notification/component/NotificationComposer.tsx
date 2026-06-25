@@ -13,7 +13,7 @@ import {
 import { NotificationDTO } from "@/shared/type";
 
 import {
-  getNotifications,
+  getNotificationsBySender,
   NotificationRequest,
   NotificationTarget,
   sendNotification,
@@ -51,7 +51,7 @@ export default function NotificationComposer({ sendEndpoint, allowedTargets, rec
       setListError(null);
       setListLoading(true);
 
-      const res = await getNotifications();
+      const res = await getNotificationsBySender();
       setNotifications(res.data);
     } catch (error) {
       setListError("Could not load the notification list.");
@@ -76,38 +76,6 @@ export default function NotificationComposer({ sendEndpoint, allowedTargets, rec
     };
     void loadReceivers();
   }, [form.target, receiverEndpoint]);
-
-  // const changeTarget = (target: NotificationTarget) => {
-  //   switch (target) {
-  //     case "ROLE":
-  //       setForm({
-  //         target: "ROLE",
-  //         role: "",
-  //         type: form.type,
-  //         title: form.title,
-  //         content: form.content,
-  //       });
-  //       break;
-
-  //     case "IDS":
-  //       setForm({
-  //         target: "IDS",
-  //         receiverIds: [],
-  //         type: form.type,
-  //         title: form.title,
-  //         content: form.content,
-  //       });
-  //       break;
-
-  //     default:
-  //       setForm({
-  //         target: "BROADCAST",
-  //         type: form.type,
-  //         title: form.title,
-  //         content: form.content,
-  //       });
-  //   }
-  // };
 
   const handleSend = async () => {
     try {
@@ -209,7 +177,7 @@ export default function NotificationComposer({ sendEndpoint, allowedTargets, rec
                 Feed thông báo
               </h3>
               <p className="mt-1 text-sm text-foreground/50">
-                Các mục mới nhất xuất hiện trong hộp thư đến của quản trị viên.
+                Các mục mới nhất xuất hiện khi bạn gửi thông báo.
               </p>
             </div>
 
@@ -249,7 +217,7 @@ export default function NotificationComposer({ sendEndpoint, allowedTargets, rec
                 Chưa có thông báo nào
               </h4>
               <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-foreground/50">
-                Các thông báo gần đây của bạn sẽ hiển thị ở đây sau khi được tạo hoặc nhận.
+                Các thông báo gần đây của bạn sẽ hiển thị ở đây sau khi được tạo.
               </p>
             </div>
           ) : (
@@ -357,7 +325,7 @@ export default function NotificationComposer({ sendEndpoint, allowedTargets, rec
                   <option value="SYSTEM">Hệ thống</option>
                   <option value="INFO">Thông tin</option>
                   <option value="WARNING">Cảnh báo</option>
-                  <option value="REMINDER">Nhắc nhở</option>
+                  <option value="REMIND">Nhắc nhở</option>
                 </select>
               </div>
 
@@ -368,7 +336,7 @@ export default function NotificationComposer({ sendEndpoint, allowedTargets, rec
                 <input
                   value={form.title}
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10"
-                  placeholder="Enter notification title"
+                  placeholder="Nhập tiêu đề ngắn gọn....Ví dụ: 'Nhắc nhở lịch hẹn ngày mai'"
                   onChange={(e) =>
                     setForm((prev) => ({
                       ...prev,
@@ -386,7 +354,7 @@ export default function NotificationComposer({ sendEndpoint, allowedTargets, rec
                   rows={6}
                   value={form.content}
                   className="w-full resize-none rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-foreground outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10"
-                  placeholder="Write the message your users will receive..."
+                  placeholder="Nhập nội dung thông báo....Ví dụ: 'Bạn có một cuộc hẹn sắp tới vào ngày mai'"
                   onChange={(e) =>
                     setForm((prev) => ({
                       ...prev,

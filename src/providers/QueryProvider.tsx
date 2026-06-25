@@ -1,5 +1,6 @@
 "use client";
 
+import { ConfirmProvider } from "@/shared/ConfirmDialogContext";
 import {
     QueryClient,
     QueryClientProvider,
@@ -19,7 +20,9 @@ export default function Providers({
 
     return (
         <QueryClientProvider client={queryClient}>
-            {children}
+            <ConfirmProvider>
+                {children}
+            </ConfirmProvider>
         </QueryClientProvider>
     );
 }

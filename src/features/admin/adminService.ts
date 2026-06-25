@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { ApiResponse, EPostSortType, ESpecialization, PageResponse, PostSummaryResponse } from "@/shared/type";
+import { ApiResponse, EForumCategory, EPostSortType, ESpecialization, PageResponse, PostManageResponse, PostSummaryResponse } from "@/shared/type";
 import { UserDTO } from "../auth/type";
 
 export interface DashboardStats {
@@ -141,7 +141,8 @@ export const unverifyDoctor = async (id: number) =>
 export const getAllPosts = async (params: {
     page?: number;
     size?: number;
-    category?: ESpecialization;
+    category?: EForumCategory;
+    specialization?: ESpecialization;
     keyword?: string;
     sort?: EPostSortType;
 }) => {
@@ -151,7 +152,7 @@ export const getAllPosts = async (params: {
             .map(([k, v]) => [k, String(v)])
     ).toString();
 
-    const res = await api.get<ApiResponse<PageResponse<PostSummaryResponse>>>(
+    const res = await api.get<ApiResponse<PageResponse<PostManageResponse>>>(
         `/admin/posts?${query}`
     );
     return res.data;

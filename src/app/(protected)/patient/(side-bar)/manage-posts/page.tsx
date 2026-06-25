@@ -549,6 +549,7 @@ import {
     CreatePostRequest,
     EForumCategory,
     EPostSortType,
+    EPostStatus,
     ESpecialization,
     ModerationResultResponse,
     PostManageResponse,
@@ -691,7 +692,7 @@ export default function ForumPage() {
             likes: 0,
             commentCount: 0,
             createdAt: new Date().toISOString(),
-            status: "PENDING_REVIEW",
+            status: EPostStatus.PENDING_REVIEW,
             moderationResult: null as unknown as ModerationResultResponse,
         };
         setPosts((prev) => [ghost, ...prev]);

@@ -33,4 +33,5 @@ export type UserDTO = {
     avatar: string;
     role: string;
     status: string;
+    profileCompleted: boolean;
 }

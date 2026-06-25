@@ -1,6 +1,7 @@
 "use client";
 
 import ProfessionalInformation from "@/features/doctor/profile/section/ProfessionalInformation";
+import DangerZoneSection from "@/shared/sections/DangerousArea";
 import PersonalProfile from "@/shared/sections/PersonalInformation";
 import { useState } from "react";
 
@@ -8,6 +9,7 @@ const sections = [
     { id: "overview", label: "Tổng quan" },
     { id: "personal-information", label: "Thông tin cá nhân" },
     { id: "professional-details", label: "Thông tin chuyên môn" },
+    { id: "dangerous-area", label: "Khu vực nguy hiểm" },
     // { id: "schedule", label: "Lịch làm việc" },
     // { id: "settings", label: "Cài đặt" },
 ] as const;
@@ -60,6 +62,8 @@ const DoctorProfilePage = () => {
                         {activeSection === "personal-information" && <PersonalProfile />}
 
                         {activeSection === "professional-details" && <ProfessionalInformation />}
+
+                        {activeSection === "dangerous-area" && <DangerZoneSection />}
 
                         {/* {activeSection === "schedule" && (
                             <section className="h-105 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4">

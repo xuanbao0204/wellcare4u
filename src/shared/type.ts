@@ -186,26 +186,44 @@ export type MedicalTest = {
 
 export type PrescriptionItem = {
   id?: number;
-
-  drug: string;
+  drugId: number | null;
+  drugName: string;
   dosage?: string;
   frequency?: string;
   duration?: string;
   instruction?: string;
 }
 
+export interface DrugDTO {
+  id: number;
+  name: string;
+  unit: string;
+  defaultDosage: string;
+  manufacturer: string;
+  category: string;
+  description: string;
+}
+
 export type Prescription = {
   id: number;
 
   createdAt: string;
-
+  startTime: string;
+  endTime: string | null;
   items: PrescriptionItem[];
 };
 
 export type MedicalRecordDetail = {
   id: number;
 
-  appointment?: AppointmentDTO;
+  appointment?: {
+    id: number;
+    slotId: number;
+    slotTime: string;
+    slotDate: string;
+    type: string;
+    status: string;
+  };
 
   patient: PatientDTO;
   doctor: DoctorDTO;
@@ -230,6 +248,43 @@ export type MedicalRecordDetail = {
   tests: MedicalTest[];
 
   items: PrescriptionItem[];
+};
+
+export type MedicalRecordDetailPrint = {
+  id: number;
+
+  patient: PatientDTO;
+  doctor: DoctorDTO;
+
+  chiefComplaint: string;
+  symptoms: string;
+
+  diagnosis: string;
+  icdCode: string;
+
+  treatmentPlan: string;
+  conclusion: string;
+
+  followUpDate: string;
+
+  status: string;
+
+  createdAt: string;
+
+  vitalSign: VitalSign;
+
+  tests: MedicalTest[];
+
+  items: PrescriptionItem[];
+
+  appointment: {
+    slotId: number,
+    slotTime: string,
+    slotDate: string,
+    reason: string,
+    type: string;
+    status: string,
+  }
 };
 
 export interface PatientDTO {
@@ -335,10 +390,29 @@ export interface PostManageResponse {
   commentCount: number;
   tags: string[];
   createdAt: string;
-  status: string;
+  status: EPostStatus;
   moderationResult?: ModerationResultResponse;
 }
 
+export enum EPostStatus {
+
+  PENDING_REVIEW = "PENDING_REVIEW",
+
+  PUBLISHED = "PUBLISHED",
+  HIDDEN = "HIDDEN",
+
+  LOCKED = "LOCKED",
+  DELETED = "DELETED",
+
+}
+
+export const POST_STATUS_LABELS: Record<EPostStatus, string> = {
+  [EPostStatus.PENDING_REVIEW]: "Đang chờ kiểm duyệt",
+  [EPostStatus.PUBLISHED]: "Đã đăng",
+  [EPostStatus.HIDDEN]: "Đã ẩn",
+  [EPostStatus.LOCKED]: "Đã khóa",
+  [EPostStatus.DELETED]: "Đã xóa",
+}
 export interface PostDetailResponse {
   id: number;
 

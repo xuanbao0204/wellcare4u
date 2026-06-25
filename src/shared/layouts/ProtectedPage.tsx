@@ -7,6 +7,7 @@ import { useAuth } from "@/shared/AuthContext";
 type ProtectedLayoutProps = {
     children: ReactNode;
     allowedRoles: string[];
+    coreProfileCompleted?: boolean;
 };
 
 export default function ProtectedLayout({

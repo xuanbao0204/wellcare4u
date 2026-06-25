@@ -27,7 +27,7 @@ export const getAllPosts = async (params: {
             .map(([k, v]) => [k, String(v)])
     ).toString();
 
-    const res = await api.get<ApiResponse<PageResponse<PostSummaryResponse>>>(
+    const res = await api.get<ApiResponse<PageResponse<PostManageResponse>>>(
         `/forum/posts?${query}`
     );
     return res.data;
