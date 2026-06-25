@@ -7,6 +7,7 @@ import { useAuth } from "@/shared/AuthContext";
 type ProtectedLayoutProps = {
     children: ReactNode;
     allowedRoles: string[];
+    coreProfileCompleted?: boolean;
 };
 
 export default function ProtectedLayout({
@@ -25,6 +26,11 @@ export default function ProtectedLayout({
 
             if (!allowedRoles.includes(user.role)) {
                 router.replace("/403");
+                return;
+            }
+
+            if (user.status != "ACTIVE") {
+                router.replace("/active-account");
                 return;
             }
         }

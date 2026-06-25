@@ -20,6 +20,7 @@ export type LoginResponse = {
     gender: string;
     avatar: string;
     role: string;
+    status: string;
 }
 
 export type UserDTO = {
@@ -31,4 +32,6 @@ export type UserDTO = {
     gender: string;
     avatar: string;
     role: string;
+    status: string;
+    profileCompleted: boolean;
 }

@@ -6,9 +6,11 @@ import { DoctorDTO } from "@/shared/type";
 interface DoctorCardProps {
     doctor: DoctorDTO;
     onSelect: (doctor: DoctorDTO) => void;
+    useSrc?: "list" | "select";
+    allowBooking?: boolean;
 }
 
-export default function DoctorCard({ doctor, onSelect }: DoctorCardProps) {
+export default function DoctorCard({ doctor, onSelect, useSrc, allowBooking }: DoctorCardProps) {
     return (
         <article className="group flex h-full flex-col gap-4 rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.95))] p-5 shadow-[0_24px_60px_-45px_rgba(15,23,42,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_28px_70px_-42px_rgba(15,23,42,0.45)]">
             <div className="flex items-start gap-4">
@@ -86,12 +88,14 @@ export default function DoctorCard({ doctor, onSelect }: DoctorCardProps) {
                 </div>
             </div>
 
-            <button
-                onClick={() => onSelect(doctor)}
-                className="mt-auto rounded-2xl bg-linear-to-r from-primary to-secondary px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-95"
-            >
-                Chọn bác sĩ này
-            </button>
+            {allowBooking && (
+                <button
+                    onClick={() => onSelect(doctor)}
+                    className="mt-auto rounded-2xl bg-linear-to-r from-primary to-secondary px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-95"
+                >
+                    {useSrc === "select" ? "Chọn bác sĩ này" : "Đặt lịch hẹn ngay"}
+                </button>
+            )}
         </article>
     );
 }

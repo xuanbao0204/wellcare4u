@@ -5,17 +5,37 @@ import { getTimePeriod } from "@/lib/commonFunctions";
 import { AppointmentType, BookingData, DoctorDTO, SlotDTO } from "@/shared/type";
 import { getSlotByDoctorAndDate } from "../patientAppointmentService";
 
+// type BookingStepProps = {
+//     doctor: DoctorDTO;
+//     onNext: (data: BookingData) => void;
+//     onBack: () => void;
+// };
+
 type BookingStepProps = {
     doctor: DoctorDTO;
+
+    selectedSlot: SlotDTO | null;
+    setSelectedSlot: (slot: SlotDTO | null) => void;
+
+    reason: string;
+    setReason: (value: string) => void;
+
+    type: string;
+    setType: (value: string) => void;
+
+    date: string;
+    setDate: (value: string) => void;
+
     onNext: (data: BookingData) => void;
     onBack: () => void;
 };
 
-export default function BookingStep({ doctor, onNext, onBack }: BookingStepProps) {
-    const [selectedSlot, setSelectedSlot] = useState<SlotDTO>();
-    const [reason, setReason] = useState("");
-    const [type, setType] = useState<string>("");
-    const [date, setDate] = useState<string>("");
+// export default function BookingStep({ doctor, onNext, onBack }: BookingStepProps) {
+export default function BookingStep({ doctor, selectedSlot, setSelectedSlot, reason, setReason, type, setType, date, setDate, onNext, onBack }: BookingStepProps) {
+    // const [selectedSlot, setSelectedSlot] = useState<SlotDTO>();
+    // const [reason, setReason] = useState("");
+    // const [type, setType] = useState<string>("");
+    // const [date, setDate] = useState<string>("");
     const [slots, setSlots] = useState<SlotDTO[]>([]);
     const [startIndex, setStartIndex] = useState(0);
 
@@ -33,6 +53,16 @@ export default function BookingStep({ doctor, onNext, onBack }: BookingStepProps
     };
 
     useEffect(() => {
+        if (!selectedSlot || slots.length === 0) return;
+
+        const matched = slots.find((s) => s.id === selectedSlot.id);
+
+        if (matched) {
+            setSelectedSlot(matched);
+        }
+    }, [slots]);
+
+    useEffect(() => {
         if (!date) return;
 
         const fetchAvailableSlots = async () => {
@@ -47,7 +77,7 @@ export default function BookingStep({ doctor, onNext, onBack }: BookingStepProps
         };
 
         fetchAvailableSlots();
-    }, [date, doctor.id]);
+    }, [date, doctor.id, selectedSlot]);
 
     const groupedSlots = {
         morning: slots.filter((slot) => getTimePeriod(slot.startTime) === "morning"),
@@ -55,7 +85,7 @@ export default function BookingStep({ doctor, onNext, onBack }: BookingStepProps
         evening: slots.filter((slot) => getTimePeriod(slot.startTime) === "evening"),
     };
 
-    const dates = getNext30Days();
+    const [dates] = useState(getNext30Days());
     const visibleDates = dates.slice(startIndex, startIndex + 7);
 
     return (
@@ -115,11 +145,11 @@ export default function BookingStep({ doctor, onNext, onBack }: BookingStepProps
                                         key={itemDate}
                                         onClick={() => {
                                             setDate(itemDate);
-                                            setSelectedSlot(undefined);
+                                            setSelectedSlot(null);
                                         }}
                                         className={`rounded-2xl border px-3 py-3 text-center transition-all ${isActive
-                                                ? "border-emerald-300 bg-emerald-50 text-emerald-800 shadow-sm"
-                                                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                                            ? "border-emerald-300 bg-emerald-50 text-emerald-800 shadow-sm"
+                                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                                             }`}
                                     >
                                         <div className="text-xs uppercase tracking-[0.12em] text-current/60">
@@ -201,12 +231,12 @@ export default function BookingStep({ doctor, onNext, onBack }: BookingStepProps
                                                             key={slot.id}
                                                             onClick={() =>
                                                                 setSelectedSlot(
-                                                                    isSelected ? undefined : slot,
+                                                                    isSelected ? null : slot,
                                                                 )
                                                             }
                                                             className={`rounded-2xl border px-4 py-4 text-left transition-all ${isSelected
-                                                                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 shadow-sm"
-                                                                    : "border-slate-200 bg-slate-50/80 text-slate-600 hover:border-slate-300 hover:bg-white"
+                                                                ? "border-emerald-300 bg-emerald-50 text-emerald-800 shadow-sm"
+                                                                : "border-slate-200 bg-slate-50/80 text-slate-600 hover:border-slate-300 hover:bg-white"
                                                                 }`}
                                                         >
                                                             <p className="text-xs uppercase tracking-[0.14em] text-current/60">

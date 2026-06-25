@@ -1,9 +1,10 @@
-import { CheckCircle2, XCircle, Info } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle2, Info, XCircle } from "lucide-react";
 
-type ToastType = "success" | "error" | "info" | "warning";
+type ToastType = "success" | "error" | "info" | "warning" | "notification";
 
 interface Props {
     type: ToastType;
+    title?: string;
     message: string;
 }
 
@@ -11,64 +12,80 @@ const typeStyles: Record<
     ToastType,
     {
         icon: React.ReactNode;
-        border: string;
-        glow: string;
+        accent: string;
+        iconBox: string;
+        title: string;
     }
 > = {
     success: {
-        icon: <CheckCircle2 className="text-emerald-400" size={22} />,
-        border: "border-emerald-400/40",
-        glow: "shadow-[0_0_25px_rgba(16,185,129,0.35)]",
+        icon: <CheckCircle2 size={22} strokeWidth={2.4} />,
+        accent: "bg-emerald-500",
+        iconBox: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+        title: "text-emerald-700",
     },
     error: {
-        icon: <XCircle className="text-rose-400" size={22} />,
-        border: "border-rose-400/40",
-        glow: "shadow-[0_0_25px_rgba(244,63,94,0.35)]",
+        icon: <XCircle size={22} strokeWidth={2.4} />,
+        accent: "bg-rose-500",
+        iconBox: "bg-rose-50 text-rose-600 ring-rose-100",
+        title: "text-rose-700",
     },
     info: {
-        icon: <Info className="text-primary" size={22} />,
-        border: "border-primary/40",
-        glow: "shadow-[0_0_25px_rgba(59,130,246,0.35)]",
+        icon: <Info size={22} strokeWidth={2.4} />,
+        accent: "bg-primary",
+        iconBox: "bg-primary/8 text-primary ring-primary/10",
+        title: "text-primary",
     },
     warning: {
-        icon: <Info className="text-yellow-400" size={22} />,
-        border: "border-yellow-400/40",
-        glow: "shadow-[0_0_25px_rgba(245,158,11,0.35)]",
+        icon: <AlertTriangle size={22} strokeWidth={2.4} />,
+        accent: "bg-amber-500",
+        iconBox: "bg-amber-50 text-amber-600 ring-amber-100",
+        title: "text-amber-700",
+    },
+
+    notification: {
+        icon: <Bell size={22} strokeWidth={2.4} />,
+        accent: "bg-secondary",
+        iconBox: "bg-secondary/8 text-secondary ring-secondary/10",
+        title: "text-primary",
     },
 };
 
-export default function CustomToast({ type, message }: Props) {
+export default function CustomToast({ type, title, message }: Props) {
     const styles = typeStyles[type];
 
     return (
         <div
             className={`
-        group
-        relative
-        flex items-center gap-4
-        min-w-85
-        min-h-16
-        rounded-3xl
-        border
-        ${styles.border}
-        ${styles.glow}
-        bg-white/10
-        backdrop-blur-xs
-        px-6 py-4
-        text-foreground
-        transition-all duration-500 ease-out
-        animate-toastIn
-      `}
+                relative flex min-h-20 w-[min(420px,calc(100vw-2rem))] overflow-hidden
+                rounded-[24px] border border-slate-200/80 bg-white/95
+                px-4 py-4 text-foreground shadow-[0_24px_60px_-32px_rgba(15,23,42,0.55)]
+                backdrop-blur-xl transition-all duration-500 ease-out animate-toastIn
+                dark:border-white/10 dark:bg-slate-950/95 dark:text-white
+            `}
         >
-            <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-white/10 to-transparent pointer-events-none" />
+            <div className={`absolute inset-y-0 left-0 w-1.5 ${styles.accent}`} />
+            <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-primary/5 via-white/40 to-transparent dark:from-white/8 dark:via-transparent" />
 
-            <div className="flex items-center justify-center">
+            <div
+                className={`
+                    relative mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center
+                    rounded-2xl ring-1 ${styles.iconBox}
+                `}
+            >
                 {styles.icon}
             </div>
 
-            <p className="text-sm font-semibold tracking-wide">
-                {message}
-            </p>
+            <div className="relative min-w-0 flex-1 pl-3 pr-1">
+                <div className="mb-1 flex items-start justify-between gap-3">
+                    <h3 className={`truncate text-sm font-bold leading-5 ${styles.title}`}>
+                        {title ?? type.charAt(0).toUpperCase() + type.slice(1)}
+                    </h3>
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300 dark:bg-white/30" />
+                </div>
+                <p className="line-clamp-2 text-sm font-medium leading-5 text-slate-600 dark:text-white/75">
+                    {message}
+                </p>
+            </div>
         </div>
     );
 }

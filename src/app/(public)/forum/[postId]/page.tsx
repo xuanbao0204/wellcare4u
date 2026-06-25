@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/features/forum/components/Avatar";
-import { CommentItem } from "@/features/forum/components/CommentItem"; 
+import { CommentItem } from "@/features/forum/components/CommentItem";
 import { getPostById, likePost, addComment, deletePost, deleteComment } from "@/features/forum/forumService"
 import { PostDetailResponse, SPECIALIZATION_COLORS, SPECIALIZATION_LABELS } from "@/shared/type";
 import { useAuth } from "@/shared/AuthContext";
@@ -15,15 +15,16 @@ export default function PostDetailPage() {
     const router = useRouter();
     const postId = Number(params.postId);
 
-    const [post, setPost] = useState<PostDetailResponse | null>(null);
+    const [post, setPost] = useState<PostDetailResponse>();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [liked, setLiked] = useState(false);
+    // const liked = post?.likedByCurrentUser || false;
+    const [liked, setLiked] = useState(post?.likedByCurrentUser || false);
     const [commentText, setCommentText] = useState("");
     const [commenting, setCommenting] = useState(false);
 
 
-    const {user} = useAuth();
+    const { user } = useAuth();
     const currentUserId = user?.id;
     const isAdmin = user?.role === "ADMIN";
 
@@ -43,12 +44,29 @@ export default function PostDetailPage() {
     useEffect(() => { fetchPost(); }, [fetchPost]);
 
     async function handleLike() {
-        if (!post || liked) return;
+        if (!post) return;
+
         try {
             const res = await likePost(postId);
             setPost(res.data);
-            setLiked(true);
-        } catch { /* ignore */ }
+            setLiked(res.data.likedByCurrentUser);
+        } catch (e: any) {
+
+            if (e?.response?.status === 401) {
+
+                const goLogin = confirm(
+                    "Bạn cần đăng nhập để thích bài viết. Đến trang đăng nhập?"
+                );
+
+                if (goLogin) {
+                    router.push("/login");
+                }
+
+                return;
+            }
+
+            alert("Không thể thực hiện thao tác thích bài viết.");
+        }
     }
 
     async function handleCommentSubmit(e: React.FormEvent) {
@@ -80,8 +98,6 @@ export default function PostDetailPage() {
         await deleteComment(commentId);
         fetchPost();
     }
-
-    // ── Loading skeleton ────────────────────────────────────────────
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50">
@@ -101,7 +117,6 @@ export default function PostDetailPage() {
         );
     }
 
-    // ── Error state ─────────────────────────────────────────────────
     if (error || !post) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -140,22 +155,13 @@ export default function PostDetailPage() {
                     <div className="p-6">
                         {/* Badges */}
                         <div className="flex flex-wrap items-center gap-2 mb-4">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium
-                                ${SPECIALIZATION_COLORS[post.category]}`}>
-                                {SPECIALIZATION_LABELS[post.category]}
-                            </span>
-
-                            {post.isVerifiedAnswer && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs
-                                 font-medium bg-emerald-50 text-emerald-700">
-                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 
-                      00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 
-                      0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    Expert Answer Available
+                            {post.relatedSpecialization && (
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium
+                                    ${SPECIALIZATION_COLORS[post.relatedSpecialization]}`}>
+                                    {SPECIALIZATION_LABELS[post.relatedSpecialization]}
                                 </span>
                             )}
+
 
                             {post.isAnonymous && (
                                 <span className="px-2.5 py-1 rounded-full text-xs font-medium
@@ -264,68 +270,64 @@ export default function PostDetailPage() {
                 </article>
 
                 {/* ── Comments section ── */}
-                <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 className="font-semibold text-slate-800">
-                            {post.comments.length} {post.comments.length === 1 ? "Answer" : "Answers"}
-                        </h2>
-                        {post.isVerifiedAnswer && (
-                            <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 
-                    00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 
-                    0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                Includes expert advice
-                            </span>
-                        )}
+                {!post.allowComment ? (
+                    <div className="px-6 py-4 text-center text-slate-400 text-sm">
+                        Comments are disabled for this post.
                     </div>
+                ) : (
+                    <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <h2 className="font-semibold text-slate-800">
+                                {post.comments.length} {post.comments.length === 1 ? "Answer" : "Answers"}
+                            </h2>
+                        </div>
 
-                    <div className="px-6 divide-y divide-slate-100">
-                        {post.comments.length === 0 ? (
-                            <p className="py-10 text-center text-slate-400 text-sm">
-                                No answers yet. Be the first to help!
-                            </p>
-                        ) : (
-                            post.comments.map((comment) => (
-                                <CommentItem
-                                    key={comment.id}
-                                    comment={comment}
-                                    postId={postId}
-                                    onReplySubmit={handleReplySubmit}
-                                    onDelete={handleDeleteComment}
-                                    currentUserId={currentUserId}
-                                    isAdmin={isAdmin}
-                                />
-                            ))
-                        )}
-                    </div>
+                        <div className="px-6 divide-y divide-slate-100">
+                            {post.comments.length === 0 ? (
+                                <p className="py-10 text-center text-slate-400 text-sm">
+                                    No answers yet. Be the first to help!
+                                </p>
+                            ) : (
+                                post.comments.map((comment) => (
+                                    <CommentItem
+                                        key={comment.id}
+                                        comment={comment}
+                                        postId={postId}
+                                        onReplySubmit={handleReplySubmit}
+                                        onDelete={handleDeleteComment}
+                                        currentUserId={currentUserId}
+                                        isAdmin={isAdmin}
+                                    />
+                                ))
+                            )}
+                        </div>
 
-                    {/* Add comment form */}
-                    <div className="px-6 py-5 border-t border-slate-100 bg-slate-50/50">
-                        <h3 className="text-sm font-semibold text-slate-700 mb-3">Write an Answer</h3>
-                        <form onSubmit={handleCommentSubmit} className="flex gap-3">
-                            <textarea
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                                rows={3}
-                                placeholder="Share your knowledge or experience..."
-                                className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm resize-none
+                        {/* Add comment form */}
+                        <div className="px-6 py-5 border-t border-slate-100 bg-slate-50/50">
+                            <h3 className="text-sm font-semibold text-slate-700 mb-3">Write an Answer</h3>
+                            <form onSubmit={handleCommentSubmit} className="flex gap-3">
+                                <textarea
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    rows={3}
+                                    placeholder="Share your knowledge or experience..."
+                                    className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm resize-none
                            focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent
                            placeholder:text-slate-400 bg-white"
-                            />
-                            <button
-                                type="submit"
-                                disabled={commenting || !commentText.trim()}
-                                className="self-end px-5 py-3 bg-teal-600 text-white text-sm font-medium rounded-xl
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={commenting || !commentText.trim()}
+                                    className="self-end px-5 py-3 bg-teal-600 text-white text-sm font-medium rounded-xl
                            hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed
                            transition-colors"
-                            >
-                                {commenting ? "Posting…" : "Post"}
-                            </button>
-                        </form>
-                    </div>
-                </section>
+                                >
+                                    {commenting ? "Posting…" : "Post"}
+                                </button>
+                            </form>
+                        </div>
+                    </section>
+                )}
             </div>
         </div>
     );

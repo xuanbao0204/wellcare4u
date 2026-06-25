@@ -4,7 +4,7 @@ import MedicalRecordDetail from "@/shared/components/medical-record-view/Medical
 import { useParams } from "next/navigation";
 
 const MedicalRecordDetailPage = () => {
-    const {recordId} = useParams()
+    const {recordId} = useParams();
     return (
         <div className=" bg-gray-50 p-4">
             <MedicalRecordDetail recordId={Number(recordId)} />

@@ -17,7 +17,7 @@ const Login = () => {
         password: "",
     });
 
-    const { user, setUser } = useAuth();
+    const { user, setUser} = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -28,11 +28,11 @@ const Login = () => {
 
     const redirectByRole = useRedirectByRole();
     
-    useEffect(() => {
-        if (user) {
-            redirectByRole(user.role);
-        }
-    }, [user]);
+    // useEffect(() => {
+    //     if (user) {
+    //         redirectByRole(user.role);
+    //     }
+    // }, [user]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -84,6 +84,7 @@ const Login = () => {
 
                     <ActionButton type="submit" disabled={loading}>{loading ? "Đang đăng nhập..." : "Đăng nhập"}</ActionButton>
                 </form>
+                <p className="text-center text-sm text-gray-500 mt-4">Quên mật khẩu? <a href="/forgot-password" className="text-blue-600 hover:underline">Lấy lại mật khẩu</a></p>
                 <p className="text-center text-gray-500 text-sm mt-4">Bạn chưa có tài khoản? <a href="/register" className="text-blue-600 hover:underline">Đăng ký</a></p>
             </div>
         </div>

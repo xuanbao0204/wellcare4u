@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Avatar } from "./Avatar";
 import { timeAgo } from "@/lib/formatDay";
 import type { CommentResponse } from "@/shared/type";
+import Badge from "@/shared/ui/Badge";
 
 interface CommentItemProps {
     comment: CommentResponse;
@@ -61,6 +62,10 @@ export function CommentItem({
                             <h4 className="text-sm font-semibold text-slate-900">
                                 {comment.author.displayName}
                             </h4>
+
+                            {comment.author.isDoctor && (
+                                <Badge value="DOCTOR" />
+                            )}
 
                             {comment.author.isVerifiedDoctor && (
                                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">

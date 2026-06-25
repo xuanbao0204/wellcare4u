@@ -10,13 +10,20 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.3.0",
+    "@tanstack/react-query": "^5.100.11",
     "axios": "^1.13.6",
     "dayjs": "^1.11.20",
+    "driver.js": "^1.4.0",
+    "framer-motion": "^12.38.0",
+    "html2canvas-pro": "^2.0.2",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-to-print": "^3.3.0",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.8.1",
     "sockjs-client": "^1.6.1"
   },
   "devDependencies": {

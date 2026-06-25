@@ -229,6 +229,7 @@ export default function AppointmentsPage() {
     const isCancelling = actionState.id === appointment.id && actionState.type === "cancel";
     const isStarting = actionState.id === appointment.id && actionState.type === "start";
     const isBusy = actionState.id === appointment.id && actionState.type !== null;
+    const canStart = canStartAppointment(appointment);
 
     if (appointment.status === "PENDING") {
       return (
@@ -249,12 +250,13 @@ export default function AppointmentsPage() {
       );
     }
 
-    if (appointment.status === "CONFIRMED") {
+    if (appointment.status === "CONFIRMED" && appointment.checkedIn) {
       return (
         <>
           <button
             onClick={() => handleStart(appointment.id)}
             disabled={isBusy}
+            // disabled={isBusy || !canStart}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isStarting
@@ -625,3 +627,15 @@ export default function AppointmentsPage() {
     </section>
   );
 }
+
+const canStartAppointment = (appointment: AppointmentDTO) => {
+  const now = new Date();
+
+  const startTime = appointment.slotTime.split(" - ")[0];
+
+  const appointmentDateTime = new Date(
+    `${appointment.slotDate}T${startTime}:00`
+  );
+
+  return now >= appointmentDateTime;
+};

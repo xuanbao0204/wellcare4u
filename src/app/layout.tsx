@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Quicksand} from "next/font/google";
-import "./globals.css";
+import { Quicksand } from "next/font/google";
+import "../app/globals.css";
 import ToastProvider from "@/shared/ToastProvider";
 import { AuthProvider } from "@/shared/AuthContext";
 import NavBar from "@/shared/sections/NavBar";
+import Providers from "@/providers/QueryProvider";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -28,11 +29,14 @@ export default function RootLayout({
         className={`w-full ${quicksand.variable} antialiased`}
       >
         <ToastProvider />
+        <Providers>
+          <AuthProvider>
 
-        <AuthProvider>
-          <NavBar/>
-          {children}
-        </AuthProvider>
+            <NavBar />
+            {children}
+
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
