@@ -109,22 +109,22 @@ export default function TestModal({ countTest, recordId, open, onClose, onAdd }:
                         className="w-full bg-white/70 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/40"
                     /> */}
 
-<MedicalTestAutocomplete
+                    <MedicalTestAutocomplete
 
-    value={tempTest.testName!}
+                        value={tempTest.testName!}
 
-    onSelect={(test)=>{
+                        onSelect={(test) => {
 
-        setTempTest({
+                            setTempTest({
 
-            ...tempTest,
-            testName: test.code + " - " + test.name,
+                                ...tempTest,
+                                testName: test.code + " - " + test.name,
 
-        });
+                            });
 
-    }}
+                        }}
 
-/>
+                    />
 
                     <textarea
                         placeholder="Kết quả"

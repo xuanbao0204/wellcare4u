@@ -3,6 +3,7 @@
 import { CreatePostModal } from "@/features/forum/components/CreatePostModal";
 import { ForumSidebar } from "@/features/forum/components/ForumSideBar";
 import { PostCard } from "@/features/forum/components/PostCard";
+import { PostSkeleton } from "@/features/forum/components/PostSkeleton";
 import { createPost, getAllPosts } from "@/features/forum/forumService";
 import { useAuth } from "@/shared/AuthContext";
 import {
@@ -45,6 +46,8 @@ export default function ForumPage() {
     const [specialization, setSpecialization] = useState<ESpecialization | undefined>();
     const [sort, setSort] = useState<EPostSortType>("NEWEST");
     const [showModal, setShowModal] = useState(false);
+
+    const [isPosting, setIsPosting] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -109,9 +112,16 @@ export default function ForumPage() {
     }
 
     async function handleCreatePost(data: CreatePostRequest) {
-        await createPost(data);
-        handleClearFilters();
-        fetchPosts();
+        try {
+            setIsPosting(true);
+            await createPost(data);
+            handleClearFilters();
+
+        } catch { }
+        finally {
+            setIsPosting(false);
+            fetchPosts();
+        }
     }
 
     const totalComments = useMemo(
@@ -437,6 +447,13 @@ export default function ForumPage() {
                         )}
 
                         {/* Posts */}
+
+                        {isPosting && (
+                            <div className="space-y-4">
+                                <PostSkeleton />
+                            </div>
+                        )}
+
                         {!loading && !error && posts.length > 0 && (
                             <div className="space-y-4">
                                 {posts.map((post) => (
@@ -483,7 +500,7 @@ export default function ForumPage() {
 
             {showModal && (
                 <CreatePostModal
-                    mode = "create"
+                    mode="create"
                     onClose={() => setShowModal(false)}
                     onSubmit={handleCreatePost}
                     userRole={user!.role}

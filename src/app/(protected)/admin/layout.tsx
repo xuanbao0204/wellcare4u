@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import ProtectedLayout from "@/shared/layouts/ProtectedPage";
 import AppSidebar, { SidebarConfig } from "@/shared/sections/SideBar";
 import { useAuth } from "@/shared/AuthContext";
-import { BellDot, Calendar, CalendarDays, FileText, LayoutDashboard, LogOut, UserCircle } from "lucide-react";
+import { BellDot, Calendar, CalendarDays, Edit, FileText, LayoutDashboard, LogOut, UserCircle } from "lucide-react";
 
 const menu = [
     { href: "/admin/dashboard", label: "Dashboard" },
@@ -26,6 +26,7 @@ const adminConfig: SidebarConfig = {
     menu: [
         { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/admin/manage-posts", label: "Quản lý bài viết", icon: FileText },
+        { href: "/admin/my-posts", label: "Bài viết của tôi", icon: Edit},
         { href: "/admin/manage-users", label: "Quản lý bệnh nhân", icon: UserCircle },
         { href: "/admin/manage-doctors", label: "Quản lý Bác sĩ", icon: UserCircle },
         { href: "/admin/manage-notifications", label: "Quản lý thông báo", icon: BellDot },
