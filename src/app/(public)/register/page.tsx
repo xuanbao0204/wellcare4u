@@ -241,7 +241,7 @@ const Register = () => {
                         </label>
 
                         <div className="w-full flex gap-8 justify-around">
-                            {["ADMIN", "DOCTOR", "PATIENT"].map((role) => (
+                            {["DOCTOR", "PATIENT"].map((role) => (
                                 <label
                                     key={role}
                                     className={`flex items-center gap-2 cursor-pointer px-3 py-2 border rounded-md transition ${form.role === role

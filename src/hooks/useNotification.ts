@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { connectWS, disconnectWS, } from "@/lib/websocket";
 import { getNotifications, } from "@/features/notification/notificationService";
 import { NotificationDTO } from "@/shared/type";
-import { showNotification } from "./toast";
-import { playNotificationSound } from "./notiSoundHelper";
+import { showNotification } from "../lib/toast";
+import { playNotificationSound } from "../lib/notiSoundHelper";
 
 export const useNotifications = (active: boolean) => {
 

@@ -2,9 +2,7 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import FloatingInput from "@/shared/components/FloatingInput";
-
-import { MEDICAL_TESTS, MedicalTestType } from "../medicalTest";
-
+import { MEDICAL_TESTS, MedicalTestType } from "./medicalTest";
 
 type Props = {
     value: string;

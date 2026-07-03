@@ -98,7 +98,7 @@ export default function BookingStep({ doctor, selectedSlot, setSelectedSlot, rea
                             Schedule builder
                         </div>
                         <h2 className="text-2xl font-semibold text-slate-900">
-                            Chọn lịch khám với bác sĩ {doctor.firstName} {doctor.lastName}
+                            Chọn lịch khám với bác sĩ {doctor.lastName} {doctor.firstName}
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-slate-500">
                             Chọn ngày, khung giờ phù hợp và thêm thông tin cần thiết để hoàn tất

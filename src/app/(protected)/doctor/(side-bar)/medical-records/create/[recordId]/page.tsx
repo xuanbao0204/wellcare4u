@@ -5,17 +5,21 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
     Activity,
+    BarChart2,
     CalendarDays,
     CheckCircle2,
     ClipboardPlus,
+    Clock3,
+    Expand,
     FileText,
     FlaskConical,
     HeartPulse,
     Pill,
     Stethoscope,
     UserRound,
+    X,
 } from "lucide-react";
-import { finalizeRecord } from "@/features/doctor/medical-record/medicalRecordService";
+import { finalizeRecord, saveStepRecord } from "@/features/doctor/medical-record/medicalRecordService";
 import {
     BookingData,
     CreateRecordData,
@@ -28,8 +32,7 @@ import {
 import FloatingInput from "@/shared/components/FloatingInput";
 import ActionButton from "@/shared/components/ActionButton";
 import TextAreaInput from "@/shared/components/TextAreaInput";
-import TestModal from "@/features/doctor/medical-record/AddTestModal";
-import { deleteFile, getPublicIdFromUrl } from "@/shared/services/uploadFile";
+import TestModal from "@/features/doctor/medical-test/AddTestModal";
 import Loader from "@/shared/ui/Loader";
 import FollowUpModal from "@/features/doctor/medical-record/FollowUpModal";
 import { useAuth } from "@/shared/AuthContext";
@@ -37,6 +40,8 @@ import { getRecordDetail } from "@/features/medical-records/medicalRecordService
 import { getBloodPressureLabel, getBloodSugarLabel, getBMILabel, getHeartRateLabel } from "@/lib/commonFunctions";
 import { searchDrugs } from "@/features/drug/drugService";
 import PrescriptionItemCard from "@/features/doctor/medical-record/PrescriptionCard";
+import { getTestsByRecord } from "@/features/doctor/medical-test/medicalTestService";
+import { useTestSocket } from "@/hooks/useTestLoader";
 
 type SectionCardProps = {
     title: string;
@@ -99,6 +104,7 @@ export default function MedicalExamPage() {
     const { recordId } = useParams();
     const [recordDetail, setRecordDetail] = useState<MedicalRecordDetail>();
     const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
 
     const [vital, setVital] = useState<VitalSign>({});
     const [tests, setTests] = useState<MedicalTest[]>([]);
@@ -112,6 +118,14 @@ export default function MedicalExamPage() {
     const [drugKeyword, setDrugKeyword] = useState("");
     const [drugResults, setDrugResults] = useState<DrugDTO[]>([]);
 
+    const [lightbox, setLightbox] = useState<string | null>(null);
+
+    const loadTests = async () => {
+        const data = await getTestsByRecord(Number(recordId));
+        setTests(data);
+        return data;
+    };
+
     const [form, setForm] = useState<CreateRecordData>({
         recordId: Number(recordId),
         chiefComplaint: "",
@@ -122,42 +136,56 @@ export default function MedicalExamPage() {
         conclusion: "",
         followUpDate: followUpDate,
         vital: vital,
-        tests: tests,
+        // tests: tests,
         items: prescriptionItems,
         isDone: false,
     });
 
     useEffect(() => {
         if (!recordId) return;
-
         const fetchData = async () => {
-            const res = await getRecordDetail(Number(recordId));
+            try {
+                setLoading(true);
 
-            if (res.status === 200) {
-                const data = res.data;
+                const res = await getRecordDetail(Number(recordId));
 
-                setRecordDetail(data);
-                setForm((prev) => ({
-                    ...prev,
-                    recordId: Number(recordId),
-                    chiefComplaint: data.chiefComplaint || "",
-                    symptoms: data.symptoms || "",
-                    diagnosis: data.diagnosis || "",
-                    icdCode: data.icdCode || "",
-                    treatmentPlan: data.treatmentPlan || "",
-                    conclusion: data.conclusion || "",
-                    vital: data.vitalSign || {},
-                    tests: data.tests || [],
-                    items: data.items || [],
-                }));
-                setVital(data.vitalSign || {});
-                setTests(data.tests || []);
-                setPrescriptionItems(data.items || []);
+                if (res.status === 200) {
+                    const data = res.data;
+
+                    setRecordDetail(data);
+                    setForm((prev) => ({
+                        ...prev,
+                        recordId: Number(recordId),
+                        chiefComplaint: data.chiefComplaint || "",
+                        symptoms: data.symptoms || "",
+                        diagnosis: data.diagnosis || "",
+                        icdCode: data.icdCode || "",
+                        treatmentPlan: data.treatmentPlan || "",
+                        conclusion: data.conclusion || "",
+                        vital: data.vitalSign || {},
+                        tests: data.tests || [],
+                        items: data.items || [],
+                    }));
+                    setVital(data.vitalSign || {});
+                    setTests(await loadTests() || []);
+                    setPrescriptionItems(data.items || []);
+                }
+            } catch (e) { }
+            finally {
+                setLoading(false);
             }
-        };
-
+        }
         fetchData();
     }, [recordId]);
+
+    useTestSocket({
+        TEST_COMPLETED: (payload) => {
+            if (step !== 3) return;
+            setTests((prev) =>
+                prev.map((t) => t.id === payload.id ? { ...t, ...payload } : t)
+            );
+        },
+    });
 
     useEffect(() => {
 
@@ -179,6 +207,62 @@ export default function MedicalExamPage() {
 
     }, [drugKeyword]);
 
+    const [saving, setSaving] = useState(false);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+    const saveStep = async (currentStep: number) => {
+        try {
+            setSaving(true);
+
+            const payload: CreateRecordData = {
+                ...form,
+                recordId: Number(recordId),
+                vital,
+                items: prescriptionItems,
+                followUpDate,
+                isDone: false,
+            };
+
+            await saveStepRecord(payload);
+
+            setLastSaved(new Date());
+        } catch (err) {
+            console.error("Autosave thất bại:", err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const validateStep = (currentStep: number): string | null => {
+        switch (currentStep) {
+            case 1:
+                if (!vital.height) return "Vui lòng nhập chiều cao.";
+                if (!vital.weight) return "Vui lòng nhập cân nặng.";
+                if (!vital.bloodPressure) return "Vui lòng nhập huyết áp.";
+                if (!vital.heartRate) return "Vui lòng nhập nhịp tim.";
+                if (!vital.bloodSugar) return "Vui lòng nhập đường huyết.";
+                return null; // null = hợp lệ
+
+            case 2:
+                if (!form.symptoms?.trim()) return "Vui lòng nhập triệu chứng.";
+                return null;
+
+            case 3:
+                if (!form.diagnosis?.trim()) return "Vui lòng nhập chẩn đoán.";
+                if (!form.icdCode?.trim()) return "Vui lòng nhập mã ICD.";
+                return null;
+
+            case 5:
+                if (!prescriptionItems.length) return null; // toa thuốc không bắt buộc
+                return null;
+
+            default:
+                return null;
+        }
+    };
+
+    const [stepError, setStepError] = useState<string | null>(null);
+
     const steps = [
         { label: "Sinh hiệu", icon: <HeartPulse className="size-4" /> },
         { label: "Triệu chứng", icon: <Stethoscope className="size-4" /> },
@@ -186,38 +270,6 @@ export default function MedicalExamPage() {
         { label: "Thuốc", icon: <Pill className="size-4" /> },
         { label: "Kết luận", icon: <ClipboardPlus className="size-4" /> },
     ];
-
-    const handleAddTest = (test: MedicalTest) => {
-        setTests((prev) => [...prev, test]);
-        setForm((prev) => ({
-            ...prev,
-            tests: [...prev.tests, test],
-        }));
-    };
-
-    const handleDeleteTest = async (index: number) => {
-        const test = tests[index];
-
-        try {
-            await deleteFile(getPublicIdFromUrl(test.imageUrl!));
-        } catch {
-            // Keep record editing uninterrupted if uploaded media cannot be deleted.
-        }
-
-        const newTests = tests.filter((_, i) => i !== index);
-
-        setTests(newTests);
-        setForm((prev) => ({
-            ...prev,
-            tests: newTests,
-        }));
-    };
-
-    const updateItem = (index: number, field: string, value: string) => {
-        setPrescriptionItems((prev) =>
-            prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
-        );
-    };
 
     const getBMI = () => {
         if (!vital.height || !vital.weight) return null;
@@ -233,7 +285,7 @@ export default function MedicalExamPage() {
         ...form,
         recordId: Number(recordId),
         vital,
-        tests,
+        // tests,
         items: prescriptionItems,
         followUpDate,
     };
@@ -241,62 +293,67 @@ export default function MedicalExamPage() {
     if (!user) return null;
     if (!recordId) return <Loader />;
 
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,rgba(250,250,255,0.94),rgba(248,250,252,0.98))]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="size-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+                    <p className="text-sm text-slate-500">Đang tải hồ sơ bệnh án...</p>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="flex min-h-screen flex-col gap-6 overflow-hidden bg-[linear-gradient(180deg,rgba(250,250,255,0.94),rgba(248,250,252,0.98))] p-4 text-[15px] md:p-6 md:text-[16px]">
             <section className="shrink-0 overflow-hidden rounded-[30px] border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(0,10,156,0.13),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.12),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.96),rgba(255,255,255,0.78))] p-6 shadow-[0_28px_80px_-42px_rgba(15,23,42,0.42)] backdrop-blur-xl">
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="max-w-2xl">
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/75 bg-white/72 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary shadow-sm">
-                            <Activity className="size-4" />
-                            Hồ sơ khám bệnh
-                        </div>
-                        <h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">
-                            Tạo bệnh án với bố cục rõ ràng như một phiếu khám thực tế
-                        </h1>
-                        <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 md:text-base">
-                            Ghi nhận sinh hiệu, triệu chứng, cận lâm sàng và đơn thuốc trong
-                            cùng một luồng làm việc mạch lạc để dễ rà soát trước khi hoàn tất.
-                        </p>
+                <div className="flex flex-col gap-4">
+                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/75 bg-white/72 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary shadow-sm">
+                        <Activity className="size-4" />
+                        LẬP BỆNH ÁN
                     </div>
+                    {/* <div className="flex flex-col gap-3">
 
-                    <div className="grid w-full gap-3 sm:grid-cols-3 xl:max-w-xl">
-                        <div className="rounded-2xl border border-white/75 bg-white/70 p-4 shadow-sm backdrop-blur">
-                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                                Tiến độ
-                            </p>
-                            <p className="mt-2 text-2xl font-semibold text-slate-950">
-                                {step}/{steps.length}
-                            </p>
-                            <p className="mt-1 text-sm text-slate-500">
-                                {completion}% quy trình hoàn tất
-                            </p>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-2xl border border-primary/25 bg-white/70 p-4 shadow-sm backdrop-blur">
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                    Tiến độ
+                                </p>
+                                <p className="mt-2 text-2xl font-semibold text-slate-950">
+                                    {step}/{steps.length}
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    {completion}% quy trình hoàn tất
+                                </p>
+                            </div>
+
+                            <div className="rounded-2xl border border-primary/25 bg-white/70 p-4 shadow-sm backdrop-blur">
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                    Xét nghiệm
+                                </p>
+                                <p className="mt-2 text-2xl font-semibold text-slate-950">
+                                    {tests.length}
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Mục đang đính kèm
+                                </p>
+                            </div>
+
+                            <div className="rounded-2xl border border-primary/25 bg-white/70 p-4 shadow-sm backdrop-blur">
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                    Kê đơn
+                                </p>
+                                <p className="mt-2 text-2xl font-semibold text-slate-950">
+                                    {prescriptionItems.length}
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">Thuốc trong toa</p>
+                            </div>
                         </div>
-                        <div className="rounded-2xl border border-white/75 bg-white/70 p-4 shadow-sm backdrop-blur">
-                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                                Xét nghiệm
-                            </p>
-                            <p className="mt-2 text-2xl font-semibold text-slate-950">
-                                {tests.length}
-                            </p>
-                            <p className="mt-1 text-sm text-slate-500">
-                                Mục đang đính kèm
-                            </p>
-                        </div>
-                        <div className="rounded-2xl border border-white/75 bg-white/70 p-4 shadow-sm backdrop-blur">
-                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                                Kê đơn
-                            </p>
-                            <p className="mt-2 text-2xl font-semibold text-slate-950">
-                                {prescriptionItems.length}
-                            </p>
-                            <p className="mt-1 text-sm text-slate-500">Thuốc trong toa</p>
-                        </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 {recordDetail && (
                     <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]">
-                        <div className="rounded-[28px] border border-white/75 bg-white/78 p-5 shadow-sm backdrop-blur">
+                        <div className="rounded-[28px] border border-primary/25 bg-white/78 p-5 shadow-sm backdrop-blur">
                             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                 <div className="flex items-center gap-4">
                                     {recordDetail.patient.avatar ? (
@@ -317,7 +374,7 @@ export default function MedicalExamPage() {
                                             Bệnh nhân
                                         </p>
                                         <h2 className="mt-1 text-xl font-semibold text-slate-950">
-                                            {recordDetail.patient.firstName} {recordDetail.patient.lastName}
+                                            {recordDetail.patient.lastName} {recordDetail.patient.firstName} -  <span className="">{recordDetail.patient.gender || "Chưa cập nhật giới tính"}</span>
                                         </h2>
                                         <p className="mt-1 text-sm text-slate-500">
                                             Mã hồ sơ #{recordDetail.id}
@@ -363,14 +420,7 @@ export default function MedicalExamPage() {
             </section>
 
             <section className="shrink-0 rounded-[28px] border border-white/70 bg-white/82 p-4 shadow-[0_22px_64px_-42px_rgba(15,23,42,0.42)] backdrop-blur-xl">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-                    <div className="w-full rounded-full bg-slate-100">
-                        <div
-                            className="h-2 rounded-full bg-linear-to-r from-primary via-secondary to-emerald-500 transition-all"
-                            style={{ width: `${completion}%` }}
-                        />
-                    </div>
-
+                <div className="flex flex-col gap-4 xl:items-center">
                     <div className="grid w-full gap-3 sm:grid-cols-2 xl:grid-cols-5">
                         {steps.map((item, index) => {
                             const currentStep = index + 1;
@@ -381,7 +431,7 @@ export default function MedicalExamPage() {
                                 <button
                                     key={item.label}
                                     type="button"
-                                    onClick={() => setStep(currentStep)}
+                                    // onClick={() => setStep(currentStep)}
                                     className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${active
                                         ? "border-primary/20 bg-primary/5 text-primary shadow-sm"
                                         : done
@@ -408,6 +458,12 @@ export default function MedicalExamPage() {
                                 </button>
                             );
                         })}
+                    </div>
+                    <div className="w-full rounded-full bg-slate-100">
+                        <div
+                            className="h-2 rounded-full bg-linear-to-r from-primary via-secondary to-emerald-500 transition-all"
+                            style={{ width: `${completion}%` }}
+                        />
                     </div>
                 </div>
             </section>
@@ -641,37 +697,144 @@ export default function MedicalExamPage() {
                     >
                         {!tests.length ? (
                             <EmptyState
-                                title="Chưa có xét nghiệm nào được thêm"
-                                description="Thêm kết quả hoặc chỉ định cận lâm sàng để hoàn thiện bệnh án."
+                                title="Chưa có chỉ định xét nghiệm"
+                                description="Nhấn 'Chỉ định xét nghiệm' để gửi yêu cầu thực hiện xét nghiệm."
                             />
                         ) : (
-                            <div className="grid gap-4">
+
+                            <div className="grid gap-3">
                                 {tests.map((test, i) => (
                                     <article
-                                        key={i}
-                                        className="rounded-3xl border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.96))] p-5 shadow-sm"
+                                        key={test.id ?? i}
+                                        className="overflow-hidden rounded-3xl border border-slate-900/8 bg-white/88 backdrop-blur-sm transition hover:shadow-[0_8px_32px_rgba(15,23,42,0.08)]"
                                     >
-                                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                            <div>
-                                                <h3 className="text-lg font-semibold text-slate-900">
-                                                    {test.testName}
-                                                </h3>
-                                                <p className="mt-2 text-sm leading-6 text-slate-600">
-                                                    {test.resultText || "Chưa có mô tả kết quả"}
-                                                </p>
-                                                <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                                                    {test.conclusion || "Chưa có kết luận"}
-                                                </p>
+                                        {/* ── header ── */}
+                                        <div className="flex items-start justify-between gap-4 p-5">
+                                            <div className="flex min-w-0 flex-1 items-start gap-3.5">
+
+                                                {/* icon */}
+                                                <div className={`flex size-10 shrink-0 items-center justify-center rounded-[14px] border ${test.status === "COMPLETED"
+                                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                    : "border-amber-200 bg-amber-50 text-amber-700"
+                                                    }`}>
+                                                    <FlaskConical className="size-4" />
+                                                </div>
+
+                                                {/* meta */}
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-[15px] font-semibold text-slate-950">
+                                                        {test.testName}
+                                                    </p>
+                                                    {test.note && (
+                                                        <p className="mt-0.5 truncate text-sm text-slate-500">
+                                                            {test.note}
+                                                        </p>
+                                                    )}
+                                                    {test.orderedAt && (
+                                                        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
+                                                            <Clock3 className="size-3" />
+                                                            Chỉ định lúc {test.orderedAt}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
 
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteTest(i)}
-                                                className="rounded-full border border-rose-200 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
-                                            >
-                                                Xóa
-                                            </button>
+                                            {/* badge */}
+                                            {test.status === "COMPLETED" ? (
+                                                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                                                    <CheckCircle2 className="size-3" />
+                                                    Hoàn thành
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                                                    <Clock3 className="size-3" />
+                                                    Đang chờ
+                                                </span>
+                                            )}
                                         </div>
+
+                                        {test.status === "COMPLETED" && (
+                                            <>
+                                                <div className="mx-5 h-px bg-slate-900/6" />
+
+                                                <div className="overflow-hidden">
+                                                    <div className="flex items-center gap-1.5 bg-slate-50/80 px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                                                        <FileText className="size-3.5" />
+                                                        Kết quả xét nghiệm
+                                                    </div>
+
+                                                    {/* ── result body ── */}
+                                                    <div className="grid gap-5 p-5 lg:grid-cols-[1fr_220px]">
+
+                                                        {/* LEFT — kết quả + kết luận */}
+                                                        <div className="grid gap-4 sm:grid-cols-2">
+                                                            <div className="space-y-1.5">
+                                                                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                                                                    Chỉ số đo được
+                                                                </p>
+                                                                <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800">
+                                                                    {test.resultText}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1.5">
+                                                                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                                                                    Kết luận
+                                                                </p>
+                                                                <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800">
+                                                                    {test.conclusion}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* RIGHT — ảnh (chỉ render khi có) */}
+                                                        {test.imageUrl && (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setLightbox(test.imageUrl!)}
+                                                                    className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50"
+                                                                >
+                                                                    <img
+                                                                        src={test.imageUrl}
+                                                                        alt={`Ảnh kết quả — ${test.testName}`}
+                                                                        className="h-full max-h-48 w-full object-cover transition duration-200 group-hover:scale-[1.03] group-hover:brightness-90 lg:max-h-full"
+                                                                    />
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
+                                                                        <span className="flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
+                                                                            <Expand className="size-3.5" />
+                                                                            Phóng to
+                                                                        </span>
+                                                                    </div>
+                                                                </button>
+
+                                                                {/* Lightbox */}
+                                                                {lightbox === test.imageUrl && (
+                                                                    <div
+                                                                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                                                                        onClick={() => setLightbox(null)}
+                                                                    >
+                                                                        <div className="relative max-h-[90dvh] max-w-[90dvw]" onClick={(e) => e.stopPropagation()}>
+                                                                            <img
+                                                                                src={test.imageUrl}
+                                                                                alt={`Ảnh kết quả — ${test.testName}`}
+                                                                                className="max-h-[90dvh] max-w-[90dvw] rounded-2xl object-contain shadow-2xl"
+                                                                            />
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => setLightbox(null)}
+                                                                                className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full bg-white shadow-lg transition hover:bg-slate-100"
+                                                                            >
+                                                                                <X className="size-4 text-slate-700" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </article>
                                 ))}
                             </div>
@@ -712,11 +875,24 @@ export default function MedicalExamPage() {
                 )}
 
                 {addTestModal && (
+                    // <TestModal
+                    //     recordId={Number(recordId)}
+                    //     open={addTestModal}
+                    //     onClose={() => setAddTestModal(false)}
+                    //     onAdd={handleTestCreated}
+                    // />
+
                     <TestModal
                         recordId={Number(recordId)}
                         open={addTestModal}
                         onClose={() => setAddTestModal(false)}
-                        onAdd={handleAddTest}
+                        onOrdered={async () => {
+
+                            const data = await getTestsByRecord(Number(recordId));
+
+                            setTests(data);
+
+                        }}
                     />
                 )}
 
@@ -753,187 +929,6 @@ export default function MedicalExamPage() {
                                 description="Thêm thuốc, liều dùng và hướng dẫn để hoàn tất phần kê đơn."
                             />
                         ) : (
-                            // <div className="space-y-5">
-                            //     {prescriptionItems.map((item, i) => {
-                            //         const isEditing = editingIndex === i;
-
-                            //         return (
-                            //             <article
-                            //                 key={i}
-                            //                 className={`rounded-3xl border p-5 transition-all ${isEditing
-                            //                     ? "border-primary/20 bg-primary/5 shadow-sm"
-                            //                     : "border-slate-200/80 bg-white/78 shadow-sm"
-                            //                     }`}
-                            //             >
-                            //                 <div className="mb-4 flex items-center justify-between gap-4">
-                            //                     <div>
-                            //                         <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                            //                             Thuốc {i + 1}
-                            //                         </p>
-                            //                         <h3 className="mt-1 text-lg font-semibold text-slate-900">
-                            //                             {item.drug || "Thuốc mới"}
-                            //                         </h3>
-                            //                     </div>
-
-                            //                     <div className="flex gap-2">
-                            //                         {!isEditing && (
-                            //                             <button
-                            //                                 type="button"
-                            //                                 onClick={() => setEditingIndex(i)}
-                            //                                 className="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-white"
-                            //                             >
-                            //                                 Chỉnh sửa
-                            //                             </button>
-                            //                         )}
-
-                            //                         {isEditing && (
-                            //                             <button
-                            //                                 type="button"
-                            //                                 onClick={() => setEditingIndex(null)}
-                            //                                 className="rounded-full border border-primary/15 bg-white px-3 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
-                            //                             >
-                            //                                 Lưu
-                            //                             </button>
-                            //                         )}
-
-                            //                         <button
-                            //                             type="button"
-                            //                             onClick={() => {
-                            //                                 const newItems = prescriptionItems.filter(
-                            //                                     (_, index) => index !== i,
-                            //                                 );
-                            //                                 setPrescriptionItems(newItems);
-
-                            //                                 if (editingIndex === i) {
-                            //                                     setEditingIndex(null);
-                            //                                 }
-                            //                             }}
-                            //                             className="rounded-full border border-rose-200 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
-                            //                         >
-                            //                             Xóa
-                            //                         </button>
-                            //                     </div>
-                            //                 </div>
-
-                            //                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            //                     <div className="relative">
-
-                            //                         <FloatingInput
-                            //                             label="Tìm thuốc"
-                            //                             value={drugKeyword}
-                            //                             disabled={!isEditing}
-                            //                             onChange={(e) =>
-                            //                                 setDrugKeyword(e.target.value)
-                            //                             }
-                            //                         />
-
-                            //                         {drugResults.length > 0 && (
-                            //                             <div
-                            //                                 className="
-                            //                                     absolute
-                            //                                     z-50
-                            //                                     mt-2
-                            //                                     w-full
-                            //                                     rounded-xl
-                            //                                     border
-                            //                                     bg-white
-                            //                                     shadow-lg
-                            //                                     max-h-60
-                            //                                     overflow-auto
-                            //                                 "
-                            //                             >
-                            //                                 {drugResults.map((drug) => (
-
-                            //                                     <button
-                            //                                         key={drug.id}
-                            //                                         type="button"
-                            //                                         className="
-                            //                                             w-full
-                            //                                             px-4
-                            //                                             py-3
-                            //                                             text-left
-                            //                                             hover:bg-slate-50
-                            //                                         "
-                            //                                         onClick={() => {
-
-                            //                                             updateItem(
-                            //                                                 i,
-                            //                                                 "drugId",
-                            //                                                 drug.id.toString()
-                            //                                             );
-
-                            //                                             updateItem(
-                            //                                                 i,
-                            //                                                 "drugName",
-                            //                                                 drug.name
-                            //                                             );
-
-                            //                                             setDrugKeyword("");
-
-                            //                                             setDrugResults([]);
-                            //                                         }}
-                            //                                     >
-                            //                                         <div className="font-medium">
-                            //                                             {drug.name}
-                            //                                         </div>
-
-                            //                                         <div className="text-xs text-slate-500">
-                            //                                             {drug.category}
-                            //                                         </div>
-
-                            //                                     </button>
-                            //                                 ))}
-                            //                             </div>
-                            //                         )}
-
-                            //                     </div>
-
-                            //                     <FloatingInput
-                            //                         label="Liều dùng: VD: 14 viên"
-                            //                         value={item.dosage || ""}
-                            //                         disabled={!isEditing}
-                            //                         className="rounded-2xl border-slate-200 bg-white"
-                            //                         onChange={(e) =>
-                            //                             updateItem(i, "dosage", e.target.value)
-                            //                         }
-                            //                     />
-
-                            //                     <FloatingInput
-                            //                         label="Tần suất sử dụng: VD: 2 lần/ngày"
-                            //                         value={item.frequency || ""}
-                            //                         disabled={!isEditing}
-                            //                         className="rounded-2xl border-slate-200 bg-white"
-                            //                         onChange={(e) =>
-                            //                             updateItem(i, "frequency", e.target.value)
-                            //                         }
-                            //                     />
-
-                            //                     <FloatingInput
-                            //                         label="Thời gian: VD: 7 ngày"
-                            //                         value={item.duration || ""}
-                            //                         disabled={!isEditing}
-                            //                         className="rounded-2xl border-slate-200 bg-white"
-                            //                         onChange={(e) =>
-                            //                             updateItem(i, "duration", e.target.value)
-                            //                         }
-                            //                     />
-
-                            //                     <div className="md:col-span-2">
-                            //                         <FloatingInput
-                            //                             label="Hướng dẫn: VD: Uống sau bữa ăn"
-                            //                             value={item.instruction || ""}
-                            //                             disabled={!isEditing}
-                            //                             className="rounded-2xl border-slate-200 bg-white"
-                            //                             onChange={(e) =>
-                            //                                 updateItem(i, "instruction", e.target.value)
-                            //                             }
-                            //                         />
-                            //                     </div>
-                            //                 </div>
-                            //             </article>
-                            //         );
-                            //     })}
-                            // </div>
                             <div className="space-y-5">
                                 {prescriptionItems.map((item, index) => (
                                     <PrescriptionItemCard
@@ -1037,14 +1032,29 @@ export default function MedicalExamPage() {
 
             <div className="sticky bottom-0 shrink-0 rounded-[28px] border border-white/70 bg-white/88 p-4 shadow-[0_-18px_50px_-36px_rgba(15,23,42,0.55)] backdrop-blur-xl">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
                     <div>
                         <p className="text-sm font-medium text-slate-700">
                             Bước hiện tại: {steps[step - 1].label}
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
-                            Rà soát nội dung trước khi chuyển bước hoặc hoàn tất bệnh án.
+                            {saving ? (
+                                <span className="text-primary">Đang lưu...</span>
+                            ) : lastSaved ? (
+                                <span className="text-emerald-600">
+                                    Đã lưu lúc {lastSaved.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                            ) : (
+                                "Rà soát nội dung trước khi chuyển bước hoặc hoàn tất bệnh án."
+                            )}
                         </p>
                     </div>
+
+                    {stepError && (
+                        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600">
+                            {stepError}
+                        </div>
+                    )}
 
                     <div className="flex w-full gap-3 md:w-auto">
                         <ActionButton
@@ -1060,7 +1070,18 @@ export default function MedicalExamPage() {
                             <ActionButton
                                 variant="primary"
                                 className="rounded-2xl px-6 shadow-sm md:w-auto"
-                                onClick={() => setStep(step + 1)}
+                                disabled={saving}
+                                onClick={async () => {
+                                    const error = validateStep(step);
+                                    if (error) {
+                                        setStepError(error);
+                                        return;
+                                    }
+                                    setStepError(null);
+                                    await saveStep(step);
+                                    setStep(step + 1);
+                                }}
+
                             >
                                 Tiếp tục
                             </ActionButton>

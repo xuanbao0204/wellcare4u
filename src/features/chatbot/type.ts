@@ -1,3 +1,5 @@
+import { AppointmentDTO, DoctorDTO, MedicalRecordDetail } from "@/shared/type";
+
 export interface SlotSuggestionDTO {
 
     slotId: number;
@@ -35,11 +37,36 @@ export interface BookingIntentDTO {
     slotSelection?: string | null;
 }
 
-export interface ChatResponseDTO {
+export type Role = "USER" | "AI";
+
+export interface ChatMessage {
+
+    id: string;
+
+    role: Role;
+
+    text: string;
+
+    intent?: string;
+
+    payload?: ToolPayload;
+
+}
+
+type ToolPayload =
+  | DoctorDTO[]
+  | AppointmentDTO[]
+  | MedicalRecordDetail[]
+  | null;
+
+export interface ChatResponse {
+
+    success: boolean;
 
     message: string;
 
-    intent?: BookingIntentDTO;
+    intent: string;
 
-    doctors?: DoctorSuggestionDTO[];
+    payload: ToolPayload;
+
 }
