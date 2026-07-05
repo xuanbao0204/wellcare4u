@@ -6,6 +6,12 @@ export const finalizeRecord = async (data: CreateRecordData) => {
    return res.data;
 }
 
+export const saveStepRecord = async (data: CreateRecordData) => {
+   const res = await api.post("/medical-records/save-draft", data);
+   return res.data;
+}
+
+
 export const startExam = async (appointmentId: number) => {
     const res = await api.post<ApiResponse<number>>(`/medical-records/create/${appointmentId}`, );
     return res.data;

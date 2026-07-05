@@ -171,18 +171,50 @@ export type VitalSign = {
   timestamp?: string;
 };
 
-export type MedicalTest = {
+// export type MedicalTest = {
+//   id?: number;
+
+//   testName?: string;
+
+//   resultText?: string;
+//   conclusion?: string;
+
+//   imageUrl?: string;
+
+//   performedAt?: string;
+// };
+
+export interface MedicalTest {
   id?: number;
 
-  testName?: string;
+  testName: string;
+
+  note?: string;
+
+  status:
+  | "PENDING"
+  | "PROCESSING"
+
+  | "COMPLETED"
+
+  | "CANCELLED";
 
   resultText?: string;
+
   conclusion?: string;
 
   imageUrl?: string;
 
-  performedAt?: string;
-};
+  orderedAt?: string;
+
+  completedAt?: string;
+
+  patientSummary : {
+    id: number;
+    fullName: string;
+    gender: string;
+  }
+}
 
 export type PrescriptionItem = {
   id?: number;
@@ -318,7 +350,7 @@ export type CreateRecordData = {
   followUpDate?: BookingData;
 
   vital: VitalSign;
-  tests: MedicalTest[];
+  // tests: MedicalTest[];
 
   items: PrescriptionItem[];
   isDone?: boolean
@@ -348,6 +380,7 @@ export interface AuthorResponse {
   avatar?: string;
   isDoctor: boolean;
   isVerifiedDoctor: boolean;
+  authorRole: "PATIENT" | "DOCTOR" | "ADMIN";
 }
 
 export interface CommentResponse {

@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
-import { ChatResponseDTO } from "./type";
+import { ChatMessage, ChatResponse } from "./type";
 
 export const sendChatMessage = (message: string) => {
-    return api.post<ChatResponseDTO>("/chat", { message });
+    return api.post<ChatResponse>("/chat", { message });
 };

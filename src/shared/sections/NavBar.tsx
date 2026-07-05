@@ -15,7 +15,7 @@ import Badge from "../ui/Badge";
 import { useRedirectByRole } from "@/features/auth/redirectByRole";
 import getNotiTypeIcon from "@/features/notification/component/NotificationIcon";
 import { markAsRead } from "@/features/notification/notificationService";
-import { useNotifications } from "@/lib/useNotification";
+import { useNotifications } from "@/hooks/useNotification";
 import { NotificationDTO } from "../type";
 import { useConfirm } from "../ConfirmDialogContext";
 

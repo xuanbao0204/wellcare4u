@@ -9,6 +9,7 @@ import { getPostById, likePost, addComment, deletePost, deleteComment } from "@/
 import { PostDetailResponse, SPECIALIZATION_COLORS, SPECIALIZATION_LABELS } from "@/shared/type";
 import { useAuth } from "@/shared/AuthContext";
 import { timeAgo } from "@/lib/formatDay";
+import { showError } from "@/lib/toast";
 
 export default function PostDetailPage() {
     const params = useParams();
@@ -27,6 +28,19 @@ export default function PostDetailPage() {
     const { user } = useAuth();
     const currentUserId = user?.id;
     const isAdmin = user?.role === "ADMIN";
+
+    const canComment = (() => {
+        if (!post?.author || !user) return false;
+        if (post.category === "PATIENT_STORY") return true;
+        switch (post.author.authorRole) {
+            case "PATIENT":
+                return user.role === "DOCTOR";
+            case "DOCTOR":
+                return user.role === "PATIENT" || user.role === "DOCTOR";
+            default:
+                return true;
+        }
+    })();
 
     const fetchPost = useCallback(async () => {
         setLoading(true);
@@ -74,7 +88,10 @@ export default function PostDetailPage() {
         if (!commentText.trim()) return;
         setCommenting(true);
         try {
-            await addComment(postId, { content: commentText.trim() });
+            const res = await addComment(postId, { content: commentText.trim() });
+            if (res.errorCode) {
+                showError(res.message);
+            }
             setCommentText("");
             fetchPost();
         } catch { /* ignore */ } finally {
@@ -303,6 +320,7 @@ export default function PostDetailPage() {
                         </div>
 
                         {/* Add comment form */}
+                        {canComment && (
                         <div className="px-6 py-5 border-t border-slate-100 bg-slate-50/50">
                             <h3 className="text-sm font-semibold text-slate-700 mb-3">Write an Answer</h3>
                             <form onSubmit={handleCommentSubmit} className="flex gap-3">
@@ -326,6 +344,7 @@ export default function PostDetailPage() {
                                 </button>
                             </form>
                         </div>
+                        )}
                     </section>
                 )}
             </div>

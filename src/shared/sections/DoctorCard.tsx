@@ -27,7 +27,7 @@ export default function DoctorCard({ doctor, onSelect, useSrc, allowBooking }: D
                     <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                             <h3 className="text-lg font-semibold text-slate-900">
-                                {doctor.firstName} {doctor.lastName}
+                                {doctor.lastName} {doctor.firstName}
                             </h3>
                             <p className="mt-1 text-sm text-slate-500">
                                 {doctor.specialization || "Chưa cập nhật chuyên khoa"}
