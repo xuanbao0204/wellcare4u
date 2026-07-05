@@ -380,6 +380,7 @@ export interface AuthorResponse {
   avatar?: string;
   isDoctor: boolean;
   isVerifiedDoctor: boolean;
+  authorRole: "PATIENT" | "DOCTOR" | "ADMIN";
 }
 
 export interface CommentResponse {
